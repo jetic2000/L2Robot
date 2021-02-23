@@ -156,12 +156,12 @@ namespace L2Robot
                         {
                             handle = true;
                             forward = true;
-
-                            bbuffer0 = new ByteBuffer(buffpacket);
+                            //bbuffer0 = new ByteBuffer(buffpacket);
 
                             switch ((PServer)buffpacket[0])
                             {
                                 case PServer.VersionCheck:
+                                    Console.WriteLine("[S]:" + BitConverter.ToString(buffpacket, 0).Replace("-", string.Empty).ToLower());
                                     handle = false;
                                     forward = false;
                                     this.gamedata.game_key[0] = buffpacket[2];
@@ -192,6 +192,9 @@ namespace L2Robot
                                     bbtmp1.ReadByte();
                                     this.gamedata.Obfuscation_Key = bbtmp1.ReadInt32();
 
+                                    Console.WriteLine("Obfuscation_Key: {0:X}", this.gamedata.Obfuscation_Key);
+
+                                    
                                     {
                                         //need to send this here... so it dones't get encrypted
                                         byte[] key_send = new byte[2 + buffpacket.Length];
@@ -201,31 +204,25 @@ namespace L2Robot
 
                                         buffpacket.CopyTo(key_send, 2);
                                         this.gamedata.Game_ClientSocket.Send(key_send);
-                                        Console.WriteLine("gameserver - keys forwarded to client");
+                                        Console.WriteLine("gameserver:{0} - keys forwarded to client", this.gamedata.Server_ID);
+                                    }
+                                    
+                                    try
+                                    {
+                                        //this.gamedata.Mixer = new MixedPackets(this.gamedata, BitConverter.ToInt32(buffpacket, 19));
+                                        this.gamedata.Mixer = new MixedPackets(this.gamedata, this.gamedata.Obfuscation_Key);
+                                    }
+                                    catch
+                                    {
+                                        //Globals.l2net_home.Add_Debug("gameserver - Negative client ID encryption key... going to continue", Globals.Red, TextType.BOT);
+                                        Console.WriteLine("gameserver - Negative client ID encryption key");
+                                    }
+                                    finally
+                                    {
+                                        //Globals.l2net_home.Add_Debug("gameserver - got client ID encryption key", Globals.Red, TextType.BOT);
+                                        Console.WriteLine("gameserver - got client ID encryption key");
                                     }
 
-                                    if (this.gamedata.Chron >= Chronicle.CT1_5)
-                                    {
-                                        if (buffpacket.Length > 18)
-                                        {
-                                            try
-                                            {
-                                                this.gamedata.Mixer = new MixedPackets(this.gamedata, BitConverter.ToInt32(buffpacket, 19));
-                                            }
-                                            catch
-                                            {
-                                                //Globals.l2net_home.Add_Debug("gameserver - Negative client ID encryption key... going to continue", Globals.Red, TextType.BOT);
-                                            }
-                                            finally
-                                            {
-                                                //Globals.l2net_home.Add_Debug("gameserver - got client ID encryption key", Globals.Red, TextType.BOT);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            //Globals.l2net_home.Add_Debug("gameserver - missing client ID encryption key... going to continue", Globals.Red, TextType.BOT);
-                                        }
-                                    }
 
                                     //setup the key
                                     this.gamedata.crypt_in.setKey(this.gamedata.game_key);
@@ -234,15 +231,19 @@ namespace L2Robot
                                     this.gamedata.crypt_clientout.setKey(this.gamedata.game_key);
                                     this.gamedata.logged_in = true;
                                     break;
+                                default:
+                                    break;
                             }
                             if (forward)
                             {
-                                bbuffer1 = new ByteBuffer(buffpacket);
-                                this.gamedata.SendToClient(bbuffer1);
+                                //Console.WriteLine("[S]:" + BitConverter.ToString(buffpacket, 0).Replace("-", string.Empty).ToLower());
+                                bbuffer0 = new ByteBuffer(buffpacket);
+                                this.gamedata.SendToClient(bbuffer0);
                             }
                             if (handle)
                             {
-                                //Globals.gamedata.SendToBotRead(bbuffer0);
+                                bbuffer1 = new ByteBuffer(buffpacket);
+                                this.gamedata.SendToBotRead(bbuffer1);
                             }
                         }
 

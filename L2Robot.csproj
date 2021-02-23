@@ -32,7 +32,32 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Iced, Version=1.10.0.0, Culture=neutral, PublicKeyToken=5baba79f4264913b, processorArchitecture=MSIL">
+      <HintPath>packages\Iced.1.10.0\lib\net45\Iced.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -54,6 +79,29 @@
     <Compile Include="Code\Crypting\NewCrypt.cs" />
     <Compile Include="Code\Data\GameData.cs" />
     <Compile Include="Code\Data\Globals.cs" />
+    <Compile Include="Code\Data\Packs\Object_Base.cs" />
+    <Compile Include="Code\Data\Packs\Other Players\CharInfo.cs" />
+    <Compile Include="Code\Data\Packs\Other Players\Clan_Info.cs" />
+    <Compile Include="Code\Data\Packs\Player\Player_Info.cs" />
+    <Compile Include="Code\Data\Packs\Text\ActionName.cs" />
+    <Compile Include="Code\Data\Packs\Text\BaseText.cs" />
+    <Compile Include="Code\Data\Packs\Text\Classes.cs" />
+    <Compile Include="Code\Data\Packs\Text\HennaGroup.cs" />
+    <Compile Include="Code\Data\Packs\Text\ItemName.cs" />
+    <Compile Include="Code\Data\Packs\Text\MapData.cs" />
+    <Compile Include="Code\Data\Packs\Text\NPCName.cs" />
+    <Compile Include="Code\Data\Packs\Text\NPCString.cs" />
+    <Compile Include="Code\Data\Packs\Text\QuestName.cs" />
+    <Compile Include="Code\Data\Packs\Text\Races.cs" />
+    <Compile Include="Code\Data\Packs\Text\ServerName.cs" />
+    <Compile Include="Code\Data\Packs\Text\SkillInfo.cs" />
+    <Compile Include="Code\Data\Packs\Text\SystemMsg.cs" />
+    <Compile Include="Code\Data\Packs\Text\ZoneName.cs" />
+    <Compile Include="Code\Logic\GameServer.cs" />
+    <Compile Include="Code\Logic\GameServer\GameServer_HandlePackets.cs" />
+    <Compile Include="Code\Network\Packets\ClientPackets.cs" />
+    <Compile Include="Code\Network\Packets\ServerPackets.cs" />
+    <Compile Include="Windows\Add\AddInfo\AddInfo.cs" />
     <Compile Include="Windows\L2NET\L2NET_Add.cs" />
     <Compile Include="Windows\L2NET\L2NET_Timers.cs" />
     <Compile Include="Windows\MainWindow.cs">
@@ -100,7 +148,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Code\Logic\GameServer\" />
+    <Folder Include="Code\Data\Packs\Items\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

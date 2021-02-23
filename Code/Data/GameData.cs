@@ -207,7 +207,7 @@ namespace L2Robot
         public volatile static bool clientport_ready = false;
 
         //threads & queue
-        public Thread gameprocessdatathread;
+        //public Thread gameprocessdatathread;
         public Thread oog_loginthread;
         public Thread ig_loginthread;
         public Thread ig_listener;
@@ -217,6 +217,7 @@ namespace L2Robot
         public MixedPackets Mixer = null;
         public ServerThread gamethread;
         public ClientThread clientthread;
+        public GameServer gameprocessdatathread;
         //public static BroadcastThread broadcastthread;
         //public static BotAIThread botaithread;
         //public static FollowRestThread followrestthread;
@@ -247,9 +248,9 @@ namespace L2Robot
 
 
         public Stack stc_buffer = new Stack();
-#if false
-        private static Player_Info _my_char = new Player_Info();
 
+        private static Player_Info _my_char = new Player_Info();
+#if false
         private static Pet_Info _my_pet = new Pet_Info();
         private static Pet_Info _my_pet1 = new Pet_Info();
         private static Pet_Info _my_pet2 = new Pet_Info();
@@ -529,52 +530,8 @@ namespace L2Robot
             crypt_clientout = new Crypt();
         }
 
-
         public void SendToGameServer(ByteBuffer buff)
         {
-            uint b0 = 0, b1 = 0;//byte
-            bool expacket = false;
-            try
-            {
-                b0 = buff.GetByte(0);
-                b1 = buff.GetByte(1);
-            }
-            catch
-            {
-
-            }
-
-            if (b0 == System.Convert.ToUInt32(PClient.EXPacket))
-            {
-                expacket = true;
-            }
-
-            //do we have an event for this packet?
-            // if (ScriptEngine.SelfPacketsContainsKey((int)b0))
-            // {
-            //     // ScriptEvent sc_ev = new ScriptEvent();
-            //     // sc_ev.Type = EventType.SelfPacket;
-            //     // sc_ev.Type2 = (int)b0;
-            //     // sc_ev.Variables.Add(new ScriptVariable(buff, "PACKET", Var_Types.BYTEBUFFER, Var_State.PUBLIC));
-            //     // sc_ev.Variables.Add(new ScriptVariable(System.DateTime.Now.Ticks, "TIMESTAMP", Var_Types.INT, Var_State.PUBLIC));
-            //     // ScriptEngine.SendToEventQueue(sc_ev);
-            // }
-
-            // if (expacket && ScriptEngine.SelfPacketsEXContainsKey((int)b1))
-            // {
-            //     // ScriptEvent sc_ev = new ScriptEvent();
-            //     // sc_ev.Type = EventType.SelfPacketEX;
-            //     // sc_ev.Type2 = (int)b1;
-            //     // sc_ev.Variables.Add(new ScriptVariable(buff, "PACKET", Var_Types.BYTEBUFFER, Var_State.PUBLIC));
-            //     // sc_ev.Variables.Add(new ScriptVariable(System.DateTime.Now.Ticks, "TIMESTAMP", Var_Types.INT, Var_State.PUBLIC));
-            //     // ScriptEngine.SendToEventQueue(sc_ev);
-            // }
-
-            // if (ScriptEngine.Blocked_SelfPackets.ContainsKey((int)b0) || (expacket && ScriptEngine.Blocked_SelfPacketsEX.ContainsKey((int)b1)))
-            // {
-            //     //blocked packet... do nothing
-            // }
-            // else
             {
                 if (Mixer != null)
                 {
@@ -584,7 +541,7 @@ namespace L2Robot
                 Globals.GameSendQueueLock.EnterWriteLock();
                 try
                 {
-                    this.gamesendqueue.Enqueue(buff);
+                    gamesendqueue.Enqueue(buff);
                 }
                 finally
                 {
@@ -603,11 +560,12 @@ namespace L2Robot
                     }
                     catch
                     {
-                        //Globals.l2net_home.Add_Error("SendToGameServer error");
+
                     }
                 }
             }
         }
+
 
         public void SendToGameServerNF(ByteBuffer buff)
         {
@@ -670,7 +628,7 @@ namespace L2Robot
 
         public void SendToBotRead(ByteBuffer buff)
         {
-            Console.WriteLine("+SendToBotRead");
+            //Console.WriteLine("+SendToBotRead");
             Globals.GameReadQueueLock.EnterWriteLock();
             try
             {
@@ -681,11 +639,11 @@ namespace L2Robot
                 Globals.GameReadQueueLock.ExitWriteLock();
             }
 
-            if (gameprocessdatathread.ThreadState == ThreadState.WaitSleepJoin)
+            if (gameprocessdatathread.processthread.ThreadState == ThreadState.WaitSleepJoin)
             {
                 try
                 {
-                    gameprocessdatathread.Interrupt();
+                    gameprocessdatathread.processthread.Interrupt();
                 }
                 catch (ThreadInterruptedException)
                 {
@@ -820,7 +778,7 @@ namespace L2Robot
                 }
             }
         }
-
+#endif
         public SortedList inventory
         {
             get
@@ -916,7 +874,7 @@ namespace L2Robot
                 }
             }
         }
-#endif
+
         public Queue clientreadqueue
         {
             get
@@ -1522,6 +1480,7 @@ namespace L2Robot
                 }
             }
         }
+#endif
 
         public Player_Info my_char
         {
@@ -1535,6 +1494,7 @@ namespace L2Robot
             }
         }
 
+#if false
         public Pet_Info my_pet
         {
             get

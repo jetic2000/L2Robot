@@ -30,29 +30,15 @@ namespace L2Robot
     {
         public static void IG_Init()
         {
-            //Init all the parameters
-            //Globals.gamedata = new GameData();
-
-            //Only for Aden Server, Lazy
-            //Globals.gamedata.Override_Game_IP = "121.51.218.57";
-            //Globals.gamedata.Override_Game_Port = 7777;
-            //Globals.gamedata.IG_Local_IP = "127.0.0.1";
-            //Globals.gamedata.IG_Local_Game_Port = 3000;
-
-            //Create the first client listeners, after one client is connected
-            //will need to start another listener to enable multi instance
-            //Globals.ig_listener.Start(); //IG_Listener()
-
             //In loop for new instance
-            Thread ig_listener = new Thread(new ThreadStart(IG_Listener));
-            ig_listener.Start();
+            Thread IGListener = new Thread(new ThreadStart(IG_Listener));
+            IGListener.Start();
 
         }
 
         public static void IG_Listener()
         {
             TcpListener Game_ClientLink;
-            GameData g = new GameData();
             string IG_Local_IP = "127.0.0.1";
             int IG_Local_Game_Port = 3000;
 
@@ -76,6 +62,7 @@ namespace L2Robot
             GameData gamedata = new GameData();
             gamedata.Override_Game_IP = "121.51.218.57";
             gamedata.Override_Game_Port = 7777;
+            gamedata.Chron = Chronicle.CT4_0;
 
             try
             {
@@ -130,92 +117,88 @@ namespace L2Robot
                 byte[] buffread = new byte[Globals.BUFFER_MAX];
                 int cnt = 0;
                 int proxy_step = 0;
-                Globals.proxy_serv = true;
 
-                if (Globals.proxy_serv)
+
+                //use proxy server by default
+                bool temp_proxy_var = true;
+                while (temp_proxy_var)
                 {
-                    //use proxy server by default
-                    bool temp_proxy_var = true;
-                    while (temp_proxy_var)
+                    cnt = gamedata.Game_ClientSocket.Receive(buffread, 0, Globals.BUFFER_PACKET, SocketFlags.None);
+                    if (buffread.Length > 0)
                     {
-                        cnt = gamedata.Game_ClientSocket.Receive(buffread, 0, Globals.BUFFER_PACKET, SocketFlags.None);
-                        if (buffread.Length > 0)
+                        if (proxy_step == 0) // first step == 1 packet
                         {
-                            if (proxy_step == 0) // first step == 1 packet
+                            if (buffread[0] == 5)// checking proxy version
                             {
-                                if (buffread[0] == 5)// checking proxy version
+                                // packet struct for sock 5 
+                                //based on http://www.faqs.org/rfcs/rfc1928.html
+                                // buffread[0]  == 5  // proxy sock ver 5
+                                // buffread[1]  ==(1-255) no. methods for log in on serv
+                                // buffread[2-no methods] - methods for login (without login/pass , with login pass etc)
+
+                                /*     methods "id"
+                                    *           o  X'00' NO AUTHENTICATION REQUIRED
+                                                o  X'01' GSSAPI
+                                                o  X'02' USERNAME/PASSWORD
+                                                o  X'03' to X'7F' IANA ASSIGNED
+                                                o  X'80' to X'FE' RESERVED FOR PRIVATE METHODS
+                                                o  X'FF' NO ACCEPTABLE METHODS
+                                    * 
+                                    * 
+                                    */
+
+                                for (int i = 2; i < buffread.Length; i++)//try to find method (0) aka without login/pass
                                 {
-                                    // packet struct for sock 5 
-                                    //based on http://www.faqs.org/rfcs/rfc1928.html
-                                    // buffread[0]  == 5  // proxy sock ver 5
-                                    // buffread[1]  ==(1-255) no. methods for log in on serv
-                                    // buffread[2-no methods] - methods for login (without login/pass , with login pass etc)
-
-                                    /*     methods "id"
-                                        *           o  X'00' NO AUTHENTICATION REQUIRED
-                                                    o  X'01' GSSAPI
-                                                    o  X'02' USERNAME/PASSWORD
-                                                    o  X'03' to X'7F' IANA ASSIGNED
-                                                    o  X'80' to X'FE' RESERVED FOR PRIVATE METHODS
-                                                    o  X'FF' NO ACCEPTABLE METHODS
-                                        * 
-                                        * 
-                                        */
-
-                                    for (int i = 2; i < buffread.Length; i++)//try to find method (0) aka without login/pass
+                                    if (buffread[i] == 0)// found method 0 (without pass)
                                     {
-                                        if (buffread[i] == 0)// found method 0 (without pass)
-                                        {
-                                            // seding answer to client...
-                                            buffread[1] = 0;
-                                            gamedata.Game_ClientSocket.Send(buffread, 2, SocketFlags.None);
-                                            proxy_step = 1;
-                                            break;
-                                        }
+                                        // seding answer to client...
+                                        buffread[1] = 0;
+                                        gamedata.Game_ClientSocket.Send(buffread, 2, SocketFlags.None);
+                                        proxy_step = 1;
+                                        break;
                                     }
                                 }
-                                else
-                                {
-                                    //Globals.l2net_home.Add_Debug("wrong proxy version", Globals.Red, TextType.BOT);
-                                }
                             }
-                            else if (proxy_step == 1)
+                            else
                             {
-
-                                // we get packet with info about dest conection
-                                // atm without handler (lazy :P) ( upd  4.12.12 - some parsing :P)
-                                Globals.proxy_serv_ip[0] = buffread[4];
-                                Globals.proxy_serv_ip[1] = buffread[5];
-                                Globals.proxy_serv_ip[2] = buffread[6];
-                                Globals.proxy_serv_ip[3] = buffread[7];
-
-                                Globals.proxy_serv_port[0] = buffread[9]; // litle / big endian port ...
-                                Globals.proxy_serv_port[1] = buffread[8];
-
-                                // sending answer
-                                buffread[0] = 5; //ver sock 5
-                                buffread[1] = 0;//sucefull
-                                buffread[2] = 0;// reserved (must be 0)
-                                buffread[3] = 1;//adres type (1) ipv4
-                                buffread[4] = 127;
-                                buffread[5] = 0;
-                                buffread[6] = 0;
-                                buffread[7] = 1;
-                                buffread[8] = 0;
-                                buffread[9] = 0;
-                                //
-                                gamedata.Game_ClientSocket.Send(buffread, 10, SocketFlags.None);
-                                temp_proxy_var = false;
+                                //Globals.l2net_home.Add_Debug("wrong proxy version", Globals.Red, TextType.BOT);
                             }
                         }
-                    }// after while (proxy ....) reci protocol packet
-                }
+                        else if (proxy_step == 1)
+                        {
+
+                            // we get packet with info about dest conection
+                            // atm without handler (lazy :P) ( upd  4.12.12 - some parsing :P)
+                            Globals.proxy_serv_ip[0] = buffread[4];
+                            Globals.proxy_serv_ip[1] = buffread[5];
+                            Globals.proxy_serv_ip[2] = buffread[6];
+                            Globals.proxy_serv_ip[3] = buffread[7];
+
+                            Globals.proxy_serv_port[0] = buffread[9]; // litle / big endian port ...
+                            Globals.proxy_serv_port[1] = buffread[8];
+
+                            // sending answer
+                            buffread[0] = 5; //ver sock 5
+                            buffread[1] = 0;//sucefull
+                            buffread[2] = 0;// reserved (must be 0)
+                            buffread[3] = 1;//adres type (1) ipv4
+                            buffread[4] = 127;
+                            buffread[5] = 0;
+                            buffread[6] = 0;
+                            buffread[7] = 1;
+                            buffread[8] = 0;
+                            buffread[9] = 0;
+                            //
+                            gamedata.Game_ClientSocket.Send(buffread, 10, SocketFlags.None);
+                            temp_proxy_var = false;
+                        }
+                    }
+                }// after while (proxy ....) reci protocol packet
                 
                 //Now start read/send client data
                 gamedata.clientthread = new ClientThread(gamedata);
                 gamedata.clientthread.readthread.Start();
                 gamedata.clientthread.sendthread.Start();
-                
             }
             catch
             {

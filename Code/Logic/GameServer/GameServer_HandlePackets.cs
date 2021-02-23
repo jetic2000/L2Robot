@@ -4,14 +4,14 @@ namespace L2Robot
 {
     public partial class GameServer
     {
-        private static void HandlePackets()
+        private void HandlePackets()
         {
             ByteBuffer buffe;
             uint b0 = 0, b1 = 0;//byte
             string last_p = "";//, last_p2 = "";
             int index = 0;
 
-            while (Globals.gamedata.GetCount_DataToBot() > 0)
+            while (this.gamedata.GetCount_DataToBot() > 0)
             {
                 try
                 {
@@ -20,8 +20,8 @@ namespace L2Robot
                     Globals.GameReadQueueLock.EnterWriteLock();
                     try
                     {
-                        Console.WriteLine("-gamereadqueue.Dequeue()");
-                        buffe = (ByteBuffer)Globals.gamethread.gamereadqueue.Dequeue();
+                        //Console.WriteLine("-gamereadqueue.Dequeue()");
+                        buffe = (ByteBuffer)this.gamedata.gamereadqueue.Dequeue();
                     }
                     catch (System.Exception e)
                     {
@@ -36,7 +36,7 @@ namespace L2Robot
                     //buffe contains unencoded data
                     b0 = buffe.ReadByte();
                     //last_p2 = last_p;
-                    last_p = b0.ToString("X2");
+                    //last_p = b0.ToString("X2");
                     //Console.WriteLine("Packet: {0}", last_p);
 
                     //do we have an event for this packet?
@@ -54,13 +54,15 @@ namespace L2Robot
                     switch ((PServer)b0)
                     {
                         case PServer.MTL:
-                            ClientPackets.MoveToLocation(buffe);
+                            //ClientPackets.MoveToLocation(buffe);
                             break;
                         case PServer.CI:
-                            //ClientPackets.CharInfo(buffe);
+                            //Console.WriteLine("[S]:PServer.CI");
+                            //ServerPackets.CharInfo(this.gamedata, buffe);
                             break;
                         case PServer.UI:
-                            //ClientPackets.UserInfo(buffe);
+                            //Console.WriteLine("[S]:PServer.UI");
+                            //ServerPackets.UserInfo(this.gamedata, buffe);
                             break;
                         case PServer.Attack:
                             //ClientPackets.Attack_Packet(buffe);
@@ -69,7 +71,11 @@ namespace L2Robot
                             //ClientPackets.Die_Packet(buffe);
                             break;
                         case PServer.NetPing:
-                            //ClientPackets.NetPing(buffe);
+                            ServerPackets.NetPing(this.gamedata, buffe);
+                            break;
+                        case PServer.StatusUpdate:
+                            Console.WriteLine("[S]:PServer.StatusUpdate");
+                            //ServerPackets.StatusUpdate(this.gamedata, buffe);
                             break;
                         case PServer.EXPacket:
                             b1 = buffe.ReadUInt16();
@@ -96,7 +102,8 @@ namespace L2Robot
                                     //ClientPackets.ExUserInfoStats(buffe);
                                     break;
                                 case PServerEX.ExUserInfo:
-                                    //ClientPackets.EXUserInfo(buffe);
+                                    Console.WriteLine("[S]:PServerEX.ExUserInfo");
+                                    ServerPackets.EXUserInfo(this.gamedata, buffe);
                                     break;
                             }
                             break;

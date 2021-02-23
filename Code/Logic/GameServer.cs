@@ -1,14 +1,26 @@
 using System;
 using System.IO;
+using System.Threading;
 
 namespace L2Robot
 {
     public partial class GameServer
     {
-        public static void Init()
+        public Thread processthread;
+        GameData gamedata;
+
+        public GameServer(GameData gamedata)
+        {
+            this.gamedata = gamedata;
+            Init();
+        }
+
+        public void Init()
         {
 
             Globals.PATH = Environment.CurrentDirectory;
+            processthread = new Thread(new ThreadStart(ProcessDataThread));
+            processthread.IsBackground = true;
             //set up all the arraylists for data
             //flush and clear all the shortcuts
             /*
@@ -25,9 +37,9 @@ namespace L2Robot
             //process command line crap
         }
 
-        public static void ProcessDataThread()
+        public void ProcessDataThread()
         {
-            Globals.gamedata.my_char.lastVerifyTime = DateTime.Now;
+            //this.gamedata.my_char.lastVerifyTime = DateTime.Now;
             DateTime last_animate = DateTime.Now;
             DateTime last_alert = DateTime.Now;
             DateTime last_clean = DateTime.Now;
@@ -35,11 +47,11 @@ namespace L2Robot
 
             //Globals.l2net_home.timer_mybuffs.Start();
 
-            Console.WriteLine("ProcessDataThread start");
+            //Console.WriteLine("ProcessDataThread start");
 
             try
             {
-                while (Globals.gamedata.running)
+                while (true)
                 {
                     //Util.PopUp_Check();
 
@@ -50,13 +62,11 @@ namespace L2Robot
 #if false
                     if ((DateTime.Now - last_animate).Ticks > Globals.SLEEP_Animate)
                     {
-                        //AnimateStuff();
                         last_animate = DateTime.Now;
                     }
 
                     if ((DateTime.Now - last_alert).Ticks > Globals.SLEEP_Sound_Alerts)
                     {
-                        //PlayAlerts();
                         last_alert = DateTime.Now;
                     }
 

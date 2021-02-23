@@ -1,4 +1,5 @@
 using System.Collections;
+using System;
 
 namespace L2Robot
 {
@@ -263,12 +264,6 @@ namespace L2Robot
                         ClanName = ci.ClanName;
                         AllyName = ci.AllyName;
                     }
-                    else if (Globals.gamedata.OOG)
-                    {
-                        //we need to request the clan/ally/warlist
-                        ServerPackets.RequestClanInfo(_ClanID);
-                        //request warstate
-                    }
                 }
             }
         }
@@ -435,12 +430,6 @@ namespace L2Robot
                     {
                         ClanName = ci.ClanName;
                         AllyName = ci.AllyName;
-                    }
-                    else if (Globals.gamedata.OOG)
-                    {
-                        //we need to request the clan/ally/warlist
-                        ServerPackets.RequestClanInfo(_ClanID);
-                        //request warstate
                     }
                 }
 
@@ -878,6 +867,8 @@ namespace L2Robot
             Max_MP = buff.ReadUInt32(); //27 00 00 00
             Cur_MP = buff.ReadUInt32(); //27 00 00 00
 
+            Console.WriteLine("Player: {0}:{1}", Name, Cur_HP);
+
             buff.ReadUInt32(); //00 00 00 00 
             buff.ReadByte(); //00
 
@@ -922,6 +913,9 @@ namespace L2Robot
             Cur_HP = buff.ReadUInt32();//9B 11 0 0
             Max_MP = buff.ReadUInt32();//F F 0 0
             Cur_MP = buff.ReadUInt32();//F F 0 0
+
+            Console.WriteLine("Player: {0}:{1}", Name, Cur_HP);
+            
             buff.ReadUInt32();//CA DF 59 0 //SP
             buff.ReadUInt32();//CE 41 0 0 //Cur_Load
             buff.ReadUInt32();//7C 28 1 0 //Max_Load
@@ -954,10 +948,8 @@ namespace L2Robot
             buff.ReadUInt32();//C7 //deco 5
             buff.ReadUInt32();//C7 //deco 6
 
-            if (Globals.gamedata.Chron >= Chronicle.CT2_3)
-            {
-                buff.ReadUInt32();//CT2.3
-            }
+
+            buff.ReadUInt32();//CT2.3
 
             Underwear = buff.ReadUInt32();//0 0 0 0
             buff.ReadUInt32();//5 1A 0 0 //REar
@@ -986,10 +978,8 @@ namespace L2Robot
             buff.ReadUInt32();//C7 //deco 5
             buff.ReadUInt32();//C7 //deco 6
 
-            if (Globals.gamedata.Chron >= Chronicle.CT2_3)
-            {
-                buff.ReadUInt32();//CT2.3
-            }
+
+            buff.ReadUInt32();//CT2.3
 
             buff.ReadUInt32();//aug underwear
             buff.ReadUInt32();//aug Rear
@@ -1018,26 +1008,23 @@ namespace L2Robot
             buff.ReadUInt32();//aug deco 5
             buff.ReadUInt32();//aug deco 6
 
-            if (Globals.gamedata.Chron >= Chronicle.CT2_3)
-            {
-                buff.ReadUInt32();//CT2.3
 
-                buff.ReadUInt32();//CT2.3
-                buff.ReadUInt32();//CT2.3
-            }
-            if (Globals.gamedata.Chron >= Chronicle.CT3_0)
-            {
-                buff.ReadUInt32();
-                buff.ReadUInt32();
-                buff.ReadUInt32();
+            buff.ReadUInt32();//CT2.3
 
-                buff.ReadUInt32(); //00 00 00 00 
-                buff.ReadUInt32(); //00 00 00 00 
-                buff.ReadUInt32(); //00 00 00 00 
-                buff.ReadUInt32(); //00 00 00 00 
-                buff.ReadUInt32(); //00 00 00 00 
-                buff.ReadUInt32(); //00 00 00 00 
-            }
+            buff.ReadUInt32();//CT2.3
+            buff.ReadUInt32();//CT2.3
+
+            buff.ReadUInt32();
+            buff.ReadUInt32();
+            buff.ReadUInt32();
+
+            buff.ReadUInt32(); //00 00 00 00 
+            buff.ReadUInt32(); //00 00 00 00 
+            buff.ReadUInt32(); //00 00 00 00 
+            buff.ReadUInt32(); //00 00 00 00 
+            buff.ReadUInt32(); //00 00 00 00 
+            buff.ReadUInt32(); //00 00 00 00 
+            
 
             buff.ReadUInt32();//F8 1 0 0 //Patk
             PatkSpeed = buff.ReadUInt32();//FD 1 0 0
@@ -1052,13 +1039,11 @@ namespace L2Robot
 
             buff.ReadUInt32();//22 5 0 0 //MDef
 
-            if (Globals.gamedata.Chron >= Chronicle.CT3_0)
-            {
-                buff.ReadUInt32(); //m.accuracy
-                buff.ReadUInt32(); //m.evasion
-                buff.ReadUInt32(); //m.critical
 
-            }
+            buff.ReadUInt32(); //m.accuracy
+            buff.ReadUInt32(); //m.evasion
+            buff.ReadUInt32(); //m.critical
+
 
             PvPFlag = buff.ReadUInt32();//0 0 0 0
             Karma = buff.ReadInt32();//0 0 0 0
@@ -1164,21 +1149,18 @@ namespace L2Robot
 
                 Agathon_ID = buff.ReadUInt32();//AgathionId
 
-                if (Globals.gamedata.Chron >= Chronicle.CT2_1)
-                {
-                    //C9 - CT2.5
-                    buff.ReadInt32(); //Fame
-                    buff.ReadInt32();// Allow or Prevent opening of mini map (hb cert)
-                    buff.ReadInt32();//Vitality Level
-                    buff.ReadUInt32(); // EXtended VFX
-                }
 
-                if (Globals.gamedata.Chron >= Chronicle.CT3_0)
-                {
-                    buff.ReadUInt32(); //00
-                    buff.ReadUInt32(); //00
-                    buff.ReadByte(); //00
-                }
+                buff.ReadInt32(); //Fame
+                buff.ReadInt32();// Allow or Prevent opening of mini map (hb cert)
+                buff.ReadInt32();//Vitality Level
+                buff.ReadUInt32(); // EXtended VFX
+                
+
+
+                buff.ReadUInt32(); //00
+                buff.ReadUInt32(); //00
+                buff.ReadByte(); //00
+
             }
             catch
             {

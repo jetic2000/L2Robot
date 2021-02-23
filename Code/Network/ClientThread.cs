@@ -67,29 +67,14 @@ namespace L2Robot
                             Globals.ClientSendQueueLock.ExitWriteLock();
                         }
 
+                        //Get Decrpted Client Data
                         buff = bbuffer0.Get_ByteArray();
-                        /* if (Globals.pck_thread.pck_recording)
-                         {
-                            // lock (Globals.pck_thread.lock_obj)
-                            // {
-                                 pck_window_dat pck_dat = new pck_window_dat(buff);
-                                 pck_dat.action = 1;
-                                 pck_dat.type = 2;
-                                 pck_dat.time = System.DateTime.Now.TimeOfDay.ToString();
-                                 Globals.pck_thread.mine_queue.Enqueue(pck_dat);
-                            // }
-                         }*/
-
                         this.gamedata.crypt_clientout.encrypt(buff);
-
                         buffe = new byte[2 + buff.Length];
-
                         b2 = BitConverter.GetBytes((short)buffe.Length);
                         buffe[0] = b2[0];
                         buffe[1] = b2[1]; ;
-
                         buff.CopyTo(buffe, 2);
-
                         this.gamedata.Game_ClientSocket.Send(buffe);//,0,buffe.Length);
 
                         //release the crap we dont need anymore
@@ -135,20 +120,23 @@ namespace L2Robot
 
                         buffpacketin = new byte[size - 2];
                         buffpacket = new byte[size - 2];
-
                         Array.Copy(buffread, 2, buffpacketin, 0, size - 2);
+                        
 
                         this.gamedata.crypt_clientin.decrypt(buffpacketin);
 
+                        //Console.WriteLine("[C]:" + BitConverter.ToString(buffpacketin, 0).Replace("-", string.Empty).ToLower());
                         Array.Copy(buffpacketin, 0, buffpacket, 0, size - 2);
 
-
+                        //TODO: What is Mixer?
                         if (this.gamedata.Mixer != null)
                         {
                             this.gamedata.Mixer.Decrypt0(buffpacket);
                         }
 
-                        //shift the data over by size
+                        Console.WriteLine("[C]:" + BitConverter.ToString(buffpacket, 0).Replace("-", string.Empty).ToLower());
+
+                        //shift the data over by size for next loop
                         for (uint i = 0; i < cnt - size; i++)
                         {
                             buffread[i] = buffread[size + i];
@@ -159,6 +147,7 @@ namespace L2Robot
                         if (buffpacket.Length > 0)
                         {
                             forward = true;
+                            //Console.WriteLine("CMD ID FROM CLIENT: {0:X}", buffpacket[0]);
 
                             //this is where we would want to handle packets sent by the client
                             switch ((PClient)buffpacket[0])
@@ -177,11 +166,16 @@ namespace L2Robot
                                         Console.WriteLine("valid protocol: {0}", prot);
                                         //Shall start a new game server node for a new client connection
                                         //There is probem for gab data if this program runs after a L2 client
-                                        
                                         this.gamedata.gamethread = new ServerThread(this.gamedata);
                                         this.gamedata.gamethread.readthread.Start();
                                         this.gamedata.gamethread.sendthread.Start();
+                                        this.gamedata.gameprocessdatathread = new GameServer(this.gamedata);
+                                        this.gamedata.gameprocessdatathread.processthread.Start();
                                     }
+                                    break;
+                                case PClient.NetPingReply:
+                                    Console.WriteLine("++Hold Client for NetPingReply");
+                                    forward = false;
                                     break;
                             }
 
@@ -189,7 +183,6 @@ namespace L2Robot
                             {
                                 //send packets from the client right to the server
                                 bbuffer0 = new ByteBuffer(buffpacketin);
-
                                 this.gamedata.SendToGameServerNF(bbuffer0);
                             }
                         }
