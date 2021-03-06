@@ -6,24 +6,6 @@ using System.Threading;
 using System.Collections.Generic;
 
 
-#if false
-Globals.ig_loginthread = new Thread(new ThreadStart(LoginServer.IG_Login));
-Globals.ig_listener = new Thread(new ThreadStart(LoginServer.IG_Listener));
-Globals.ig_Gamelistener = new Thread(new ThreadStart(LoginServer.IG_StartGameLinks));
-Globals.loginsendthread = new Thread(new ThreadStart(LoginServer.LoginSendThread));
-Globals.loginreadthread = new Thread(new ThreadStart(LoginServer.LoginReadThread));
-
-
-Globals.gameprocessdatathread = new Thread(new ThreadStart(GameServer.ProcessDataThread));
-
-Globals.gamedrawthread = new Thread(new ThreadStart(MapThread.DrawGameThread));
-
-Globals.gamethread = new ServerThread();
-Globals.clientthread = new ClientThread();
-#endif
-
-
-
 namespace L2Robot
 {
     class LoginServer
@@ -33,7 +15,6 @@ namespace L2Robot
             //In loop for new instance
             Thread IGListener = new Thread(new ThreadStart(IG_Listener));
             IGListener.Start();
-
         }
 
         public static void IG_Listener()
@@ -46,11 +27,18 @@ namespace L2Robot
             Game_ClientLink = new TcpListener(ipAd, IG_Local_Game_Port);
             Game_ClientLink.Start();
 
+            // GameData g1 = new GameData();
+            // g1.Mixer = new MixedPackets(g1, 0x12121212);
+
+            // GameData g2 = new GameData();
+            // g1.Mixer = new MixedPackets(g2, 0x12121212);
+
             while(true)
             {
                 Console.WriteLine("Waiting a client");
                 GameData gamedata = IG_Start_Listen(Game_ClientLink);
                 Console.WriteLine("Found a client");
+                
                 IG_ProcData(gamedata);
             }
         }
@@ -63,6 +51,8 @@ namespace L2Robot
             gamedata.Override_Game_IP = "121.51.218.57";
             gamedata.Override_Game_Port = 7777;
             gamedata.Chron = Chronicle.CT4_0;
+            //Globals.Games.Add(1000, gamedata);
+            //Globals.l2net_home.timer_instances.Start();
 
             try
             {
@@ -70,6 +60,7 @@ namespace L2Robot
                 bool got_connection = false;
                 while (!got_connection)
                 {
+
                     try
                     {
                         gamedata.Game_ClientSocket = listener.AcceptSocket();
@@ -81,6 +72,9 @@ namespace L2Robot
                         
                         ip = gamedata.Game_ClientSocket.RemoteEndPoint.ToString().Split(':')[0];
                         port = int.Parse(gamedata.Game_ClientSocket.RemoteEndPoint.ToString().Split(':')[1]);
+                        //
+                        //port = 0;
+                        gamedata.Client_Port = port;
 
                         Console.WriteLine("IP:{0}, PORT:{1}", ip, port);
 
@@ -92,8 +86,8 @@ namespace L2Robot
                         {
                             Globals.Games.Add(port, gamedata);
                         }
-
                         got_connection = true;
+                        Globals.l2net_home.timer_instances.Start();
                     }
                     catch
                     {
@@ -197,6 +191,7 @@ namespace L2Robot
                 
                 //Now start read/send client data
                 gamedata.clientthread = new ClientThread(gamedata);
+                gamedata.running = true;
                 gamedata.clientthread.readthread.Start();
                 gamedata.clientthread.sendthread.Start();
             }

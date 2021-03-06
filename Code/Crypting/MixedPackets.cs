@@ -9,14 +9,14 @@ namespace L2Robot
     public class MixedPackets
     {
         //private long _seed;
-        public static uint[] tmp = new uint[16];
+        public uint[] tmp = new uint[16];
         private byte[] PacketIDs = new byte[256];//209
         private ushort[] SuperIDs = new ushort[512];//78
         //private int PacketIDLimit = 0xFF;
         //private int SuperIDLimit = 0xFFFF;//0x80;//0x4e
 
-        private int magic;// = 0x18677494; //40 07 AF 64
-        GameData gamedata;
+        //private int magic;// = 0x18677494; //40 07 AF 64
+        //GameData gamedata;
 
         private IntPtr ThisCallCodes;
         private IntPtr ThisCallParams;
@@ -31,12 +31,11 @@ namespace L2Robot
         public delegate uint Delegate_ThisCall(IntPtr Params);
         private static Delegate_ThisCall delegate_ThisCall;
 
+
         [UnmanagedFunctionPointerAttribute(CallingConvention.Cdecl)]
         public delegate uint Delegate_ThisCallEx(IntPtr Params);
         private static Delegate_ThisCallEx delegate_ThisCallEx;
         public const uint MEM_RELEASE = 0x8000;
-
-
 
         public MixedPackets(GameData gamedata, int magic)
         {
@@ -61,6 +60,7 @@ namespace L2Robot
 
             Console.WriteLine("Magic=0x{0:X}", magic);
             Console.WriteLine("resultp[CMD]={0}", BitConverter.ToString(PacketIDs));
+
             for (int j = 0; j < 64; j++)
             {
                 Console.WriteLine("result[EXCMD]=0x{0:X}", SuperIDs[j]);
@@ -103,7 +103,7 @@ namespace L2Robot
 
                 if (Packet.GetByte(0) == (byte)PClient.EXPacket)
                 {
-                    sdata = (ushort)((Packet.GetByte(0)) | (Packet.GetByte(1) << 8));
+                    sdata = (ushort)((Packet.GetByte(1)) | (Packet.GetByte(2) << 8));
                     rdata = (ushort)GetIndexOfSuper(sdata, SuperIDs);
                     Packet.SetByte(1, (byte)(rdata & 0xFF));
                     Packet.SetByte(2, (byte)((rdata & 0xFF00) >> 8));
@@ -343,7 +343,9 @@ namespace L2Robot
                 Marshal.Copy(code, 0, ThisCallCodes, code.Length);
             }
             delegate_ThisCall = Marshal.GetDelegateForFunctionPointer<Delegate_ThisCall>(ThisCallCodes);
-            ThisCallParams = Marshal.AllocHGlobal(4 * 20);
+            //delegate_ThisCall = Marshal.GetDelegateForFunctionPointer<Delegate_ThisCall>(ThisCallCodes);
+            ThisCallParams = Marshal.AllocHGlobal(80);
+            //Marshal.FreeHGlobal(ThisCallParams);
             //Console.WriteLine($"ThisCall:{ThisCallCodes.ToString("X8")}:{ThisCallParams.ToString("X8")}");
         }
 
@@ -365,11 +367,11 @@ namespace L2Robot
             GCHandle hObject_result = GCHandle.Alloc(PacketIDs, GCHandleType.Pinned);
             addr_result = hObject_result.AddrOfPinnedObject();
 
-            //GCHandle hObject_result = GCHandle.Alloc(result, GCHandleType.Pinned);
-            //addr_result = hObject_result.AddrOfPinnedObject();
 
-
-            if (delegate_ThisCall == null) InitThisCall();
+            if (delegate_ThisCall == null) 
+            {
+                InitThisCall();
+            }
             lock (delegate_ThisCall)
             {
                 try
@@ -383,14 +385,16 @@ namespace L2Robot
                 }
                 finally
                 {
-                    VirtualFreeEx(-1, (int)ThisCallCodes, 0, MEM_RELEASE);
-                    Marshal.FreeHGlobal(ThisCallParams);
+                     VirtualFreeEx(-1, (int)ThisCallCodes, 0, MEM_RELEASE);
+                     Marshal.FreeHGlobal(ThisCallParams);
+                     delegate_ThisCall = null;
                     if (hObject_tmp.IsAllocated)
                         hObject_tmp.Free();
                     if (hObject_result.IsAllocated)
                         hObject_result.Free();
                 }
             }
+
             return p1;
         }
 
@@ -618,6 +622,7 @@ namespace L2Robot
                 {
                     VirtualFreeEx(-1, (int)ThisCallCodes, 0, MEM_RELEASE);
                     Marshal.FreeHGlobal(ThisCallParams);
+                    delegate_ThisCallEx = null;
                     if (hObject_tmp.IsAllocated)
                         hObject_tmp.Free();
                     if (hObject_result.IsAllocated)

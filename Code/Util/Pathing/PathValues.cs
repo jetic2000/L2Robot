@@ -5,13 +5,13 @@ namespace L2Robot
 {
     public class Pathing
     {
-        static public ArrayList GetPath(Point start, Point dest)
+        static public ArrayList GetPath(GameData gamedata, Point start, Point dest)
         {
             ArrayList my_path;
             my_path = new ArrayList();
-            if (Globals.gamedata.pathManager.runASTAR(dest.X, dest.Y))
+            if (gamedata.pathManager.runASTAR(gamedata, dest.X, dest.Y))
             {
-                my_path = Globals.gamedata.pathManager.path;
+                my_path = gamedata.pathManager.path;
             }
             else
             {

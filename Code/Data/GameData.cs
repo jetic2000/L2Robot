@@ -191,7 +191,7 @@ namespace L2Robot
     {
 
         //Client & Server
-
+        public bool InList = false;
         public Socket Login_GameSocket;
         //IG/OOG: bot conection to game server
         public Socket Game_GameSocket;
@@ -221,7 +221,8 @@ namespace L2Robot
         //public static BroadcastThread broadcastthread;
         //public static BotAIThread botaithread;
         //public static FollowRestThread followrestthread;
-        //public ScriptEngine scriptthread;
+        public ScriptEngine scriptthread;
+        public string Script_File = "";
         private Queue _gamesendqueue = new Queue();
         private Queue _gamereadqueue = new Queue();
         private Queue _clientsendqueue = new Queue();
@@ -283,7 +284,7 @@ namespace L2Robot
 
         private ArrayList _ShortCuts = new ArrayList(Globals.Skills_Pages * Globals.Skills_PerPage);
 
-        //private Polygon _Paths = new Polygon();
+        private Polygon _Paths = new Polygon();
         private ArrayList _Walls = new ArrayList();
 
         private byte[] _sessionID = new byte[4];
@@ -309,7 +310,9 @@ namespace L2Robot
 
         public volatile uint yesno_state = 0;
 
-        //public volatile ScriptState CurrentScriptState = ScriptState.Stopped;
+        public volatile ScriptState CurrentScriptState = ScriptState.Stopped;
+
+        public volatile int _Client_Port;
 
         private string _Login_IP;
         public volatile int Login_Port;
@@ -364,7 +367,7 @@ namespace L2Robot
         public volatile System.Net.Sockets.Socket GGsocket;
 
         //TD:Global pathmanager for A*
-        //private PathManager _pathManager = new PathManager();
+        private PathManager _pathManager = new PathManager();
 
         private readonly object PartyMembersLock = new object();
         private readonly object ShortCutsLock = new object();
@@ -393,6 +396,7 @@ namespace L2Robot
         private readonly object GG_IPLock = new object();
         private readonly object Login_IPLock = new object();
         private readonly object Game_IPLock = new object();
+        private readonly object Client_PortLock = new object();
         private readonly object gamesendqueueLock = new object();
         private readonly object gamereadqueueLock = new object();
         private readonly object clientsendqueueLock = new object();
@@ -739,6 +743,7 @@ namespace L2Robot
                 }
             }
         }
+#endif
 
         public ArrayList Walls
         {
@@ -759,6 +764,7 @@ namespace L2Robot
                 }
             }
         }
+
         public Polygon Paths
         {
             get
@@ -778,7 +784,7 @@ namespace L2Robot
                 }
             }
         }
-#endif
+
         public SortedList inventory
         {
             get
@@ -988,6 +994,26 @@ namespace L2Robot
                 lock (PrivateMsgQueueLock)
                 {
                     _PrivateMsgQueue = value;
+                }
+            }
+        }
+
+        public int Client_Port
+        {
+            get
+            {
+                int tmp;
+                lock (Client_PortLock)
+                {
+                    tmp = this._Client_Port;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (Client_PortLock)
+                {
+                    _Client_Port = value;
                 }
             }
         }
@@ -1460,7 +1486,7 @@ namespace L2Robot
                 }
             }
         }
-#if false
+
         public PathManager pathManager
         {
             get
@@ -1480,7 +1506,6 @@ namespace L2Robot
                 }
             }
         }
-#endif
 
         public Player_Info my_char
         {

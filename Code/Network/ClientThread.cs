@@ -105,7 +105,7 @@ namespace L2Robot
             ByteBuffer bbuffer0;
             try
             {
-                while (true)
+                while (this.gamedata.running)
                 {
                     cnt += this.gamedata.Game_ClientSocket.Receive(buffread, cnt, Globals.BUFFER_PACKET - cnt, SocketFlags.None);
                     size = BitConverter.ToUInt16(buffread, 0);
@@ -147,6 +147,48 @@ namespace L2Robot
                         if (buffpacket.Length > 0)
                         {
                             forward = true;
+
+                            if (this.gamedata.CurrentScriptState == ScriptState.Running)
+                            {
+                                if ((PClient)buffpacket[0] == PClient.EXPacket)
+                                {
+                                    if (this.gamedata.scriptthread.Blocked_ClientPacketsEX.ContainsKey(Convert.ToInt32(buffpacket[1] + buffpacket[2] << 8)))
+                                    {
+                                        forward = false;
+                                    }
+
+                                    if (this.gamedata.scriptthread.ClientPacketsEXContainsKey(Convert.ToInt32(buffpacket[1] + buffpacket[2] << 8)))
+                                    {
+                                        ByteBuffer bb = new ByteBuffer(buffpacket);
+                                        ScriptEvent sc_ev = new ScriptEvent();
+                                        sc_ev.Type = EventType.ClientPacketEX;
+                                        sc_ev.Type2 = Convert.ToInt32(buffpacket[1] + buffpacket[2] << 8);
+                                        sc_ev.Variables.Add(new ScriptVariable(bb, "PACKET", Var_Types.BYTEBUFFER, Var_State.PUBLIC));
+                                        sc_ev.Variables.Add(new ScriptVariable(DateTime.Now.Ticks, "TIMESTAMP", Var_Types.INT, Var_State.PUBLIC));
+                                        this.gamedata.scriptthread.SendToEventQueue(sc_ev);
+                                    }
+                                }
+                                else
+                                {
+                                    if (this.gamedata.scriptthread.Blocked_ClientPackets.ContainsKey(Convert.ToInt32(buffpacket[0])))
+                                    {
+                                        forward = false;
+                                    }
+
+                                    if (this.gamedata.scriptthread.ClientPacketsContainsKey(Convert.ToInt32(buffpacket[0])))
+                                    {
+                                        ByteBuffer bb = new ByteBuffer(buffpacket);
+
+                                        ScriptEvent sc_ev = new ScriptEvent();
+                                        sc_ev.Type = EventType.ClientPacket;
+                                        sc_ev.Type2 = Convert.ToInt32(buffpacket[0]);
+                                        sc_ev.Variables.Add(new ScriptVariable(bb, "PACKET", Var_Types.BYTEBUFFER, Var_State.PUBLIC));
+                                        sc_ev.Variables.Add(new ScriptVariable(DateTime.Now.Ticks, "TIMESTAMP", Var_Types.INT, Var_State.PUBLIC));
+                                        this.gamedata.scriptthread.SendToEventQueue(sc_ev);
+                                    }
+                                }
+                            }
+
                             //Console.WriteLine("CMD ID FROM CLIENT: {0:X}", buffpacket[0]);
 
                             //this is where we would want to handle packets sent by the client
@@ -171,11 +213,13 @@ namespace L2Robot
                                         this.gamedata.gamethread.sendthread.Start();
                                         this.gamedata.gameprocessdatathread = new GameServer(this.gamedata);
                                         this.gamedata.gameprocessdatathread.processthread.Start();
+
+                                        this.gamedata.scriptthread = new ScriptEngine(this.gamedata);
                                     }
                                     break;
                                 case PClient.NetPingReply:
                                     Console.WriteLine("++Hold Client for NetPingReply");
-                                    forward = false;
+                                    forward = true;
                                     break;
                             }
 

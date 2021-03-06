@@ -73,7 +73,7 @@ namespace L2Robot
         }
 
 
-        public bool runASTAR(float targetX, float targetY)
+        public bool runASTAR(GameData gamedata, float targetX, float targetY)
         {
             Astar pathFinder = new Astar();
             bool pathFound = false;
@@ -82,14 +82,14 @@ namespace L2Robot
             try
             {
 
-                pathFinder.allocNode(Globals.gamedata.my_char.X, Globals.gamedata.my_char.Y, 0, 0);
-                pathFinder.findStartNode();
-                targetFound = pathFinder.findTargetNode(targetX, targetY);
+                pathFinder.allocNode(gamedata, gamedata.my_char.X, gamedata.my_char.Y, 0, 0);
+                pathFinder.findStartNode(gamedata);
+                targetFound = pathFinder.findTargetNode(gamedata, targetX, targetY);
 
                 if (targetFound)
                 {
 
-                    pathFound = pathFinder.fringeSearch();
+                    pathFound = pathFinder.fringeSearch(gamedata);
                     pathFinder.trimPath();
                     pathFinder.buildPathPoints();
                     path = pathFinder.pathPoints;

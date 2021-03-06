@@ -39,7 +39,7 @@ namespace L2Robot
 
     public static class Globals
     {
-        //public static L2NET l2net_home;
+        public static FormMain l2net_home;
 
         //1234567890123456
         public const string AES_Key = "#V^yw45?YLV$5wYa";
@@ -380,6 +380,7 @@ namespace L2Robot
         public static bool CanPrint = false;
         public static bool Got_Skills = false;
 
+        public static ReaderWriterLockSlim InstancesLock = new ReaderWriterLockSlim();
         public static ReaderWriterLockSlim NPCLock = new ReaderWriterLockSlim();
         public static ReaderWriterLockSlim InventoryLock = new ReaderWriterLockSlim();
         public static ReaderWriterLockSlim PetInventoryLock = new ReaderWriterLockSlim();

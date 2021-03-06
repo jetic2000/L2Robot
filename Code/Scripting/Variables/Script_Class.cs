@@ -10,11 +10,11 @@ namespace L2Robot
         public string ParentFile = "";
         public ArrayList _Variables = new ArrayList();
 
-        public bool Has_Function(string name)
+        public bool Has_Function(ScriptEngine engine, string name)
         {
             name = name.ToUpperInvariant();
 
-            if (((ScriptFile)ScriptEngine.Files[File])._functionlist.ContainsKey(name))
+            if (((ScriptFile)engine.Files[File])._functionlist.ContainsKey(name))
             {
                 return true;
             }
@@ -29,7 +29,7 @@ namespace L2Robot
             return false;
         }
 
-        private void Add_Function(string name, int line, ScriptFile filein, Var_State state)
+        private void Add_Function(ScriptEngine engine, string name, int line, ScriptFile filein, Var_State state)
         {
             ScriptLabel scr_lab = new ScriptLabel();
 
@@ -41,7 +41,7 @@ namespace L2Robot
             filein._functionlist.Add(scr_lab.Name, scr_lab);
         }
 
-        public void ReadFile(ScriptFile filein)
+        public void ReadFile(ScriptEngine engine, ScriptFile filein)
         {
             File = filein.Name;
 
@@ -63,95 +63,95 @@ namespace L2Robot
                     case ScriptCommands.INCLUDE:
                         if (!cstarted)
                         {
-                            Globals.scriptthread.Script_INCLUDE(line);
+                            //Globals.scriptthread.Script_INCLUDE(line);
                         }
                         break;
                     case ScriptCommands.PUBLIC:
                         if (cstarted && vstarted)
                         {
                             //defining a variable
-                            p1 = ScriptEngine.Get_String(ref line);
-                            p2 = ScriptEngine.Get_String(ref line).ToUpperInvariant();
-                            p3 = ScriptEngine.Get_String(ref line);
+                            p1 = engine.Get_String(ref line);
+                            p2 = engine.Get_String(ref line).ToUpperInvariant();
+                            p3 = engine.Get_String(ref line);
 
-                            ScriptVariable nv = ScriptEngine.Create_Variable(p1, p2, p3, Var_State.PUBLIC);
+                            ScriptVariable nv = engine.Create_Variable(p1, p2, p3, Var_State.PUBLIC);
 
                             _Variables.Add(nv);
                         }
                         else if (cstarted)
                         {
                             //a function
-                            p1 = ScriptEngine.Get_String(ref line);
-                            Add_Function(p1, i, filein, Var_State.PUBLIC);
+                            p1 = engine.Get_String(ref line);
+                            Add_Function(engine, p1, i, filein, Var_State.PUBLIC);
                         }
                         break;
                     case ScriptCommands.PRIVATE:
                         if (cstarted && vstarted)
                         {
                             //defining a variable
-                            p1 = ScriptEngine.Get_String(ref line);
-                            p2 = ScriptEngine.Get_String(ref line).ToUpperInvariant();
-                            p3 = ScriptEngine.Get_String(ref line);
+                            p1 = engine.Get_String(ref line);
+                            p2 = engine.Get_String(ref line).ToUpperInvariant();
+                            p3 = engine.Get_String(ref line);
 
-                            ScriptVariable nv = ScriptEngine.Create_Variable(p1, p2, p3, Var_State.PRIVATE);
+                            ScriptVariable nv = engine.Create_Variable(p1, p2, p3, Var_State.PRIVATE);
 
                             _Variables.Add(nv);
                         }
                         else if (cstarted)
                         {
                             //a function
-                            p1 = ScriptEngine.Get_String(ref line);
-                            Add_Function(p1, i, filein, Var_State.PRIVATE);
+                            p1 = engine.Get_String(ref line);
+                            Add_Function(engine, p1, i, filein, Var_State.PRIVATE);
                         }
                         break;
                     case ScriptCommands.PROTECTED:
                         if (cstarted && vstarted)
                         {
                             //defining a variable
-                            p1 = ScriptEngine.Get_String(ref line);
-                            p2 = ScriptEngine.Get_String(ref line).ToUpperInvariant();
-                            p3 = ScriptEngine.Get_String(ref line);
+                            p1 = engine.Get_String(ref line);
+                            p2 = engine.Get_String(ref line).ToUpperInvariant();
+                            p3 = engine.Get_String(ref line);
 
-                            ScriptVariable nv = ScriptEngine.Create_Variable(p1, p2, p3, Var_State.PROTECTED);
+                            ScriptVariable nv = engine.Create_Variable(p1, p2, p3, Var_State.PROTECTED);
 
                             _Variables.Add(nv);
                         }
                         else if (cstarted)
                         {
                             //a function
-                            p1 = ScriptEngine.Get_String(ref line);
-                            Add_Function(p1, i, filein, Var_State.PROTECTED);
+                            p1 = engine.Get_String(ref line);
+                            Add_Function(engine, p1, i, filein, Var_State.PROTECTED);
                         }
                         break;
                     case ScriptCommands.STATIC:
                         if (cstarted && vstarted)
                         {
                             //defining a variable
-                            p1 = ScriptEngine.Get_String(ref line);
-                            p2 = ScriptEngine.Get_String(ref line).ToUpperInvariant();
-                            p3 = ScriptEngine.Get_String(ref line);
+                            p1 = engine.Get_String(ref line);
+                            p2 = engine.Get_String(ref line).ToUpperInvariant();
+                            p3 = engine.Get_String(ref line);
 
-                            ScriptVariable nv = ScriptEngine.Create_Variable(p1, p2, p3, Var_State.STATIC);
+                            ScriptVariable nv = engine.Create_Variable(p1, p2, p3, Var_State.STATIC);
 
                             _Variables.Add(nv);
                         }
                         else if (cstarted)
                         {
                             //a function
-                            p1 = ScriptEngine.Get_String(ref line);
-                            Add_Function(p1, i, filein, Var_State.STATIC);
+                            p1 = engine.Get_String(ref line);
+                            Add_Function(engine, p1, i, filein, Var_State.STATIC);
                         }
                         break;
                     case ScriptCommands.CLASS:
                         cstarted = true;
-                        Name = ScriptEngine.Get_String(ref line).ToUpperInvariant();
-                        p1 = ScriptEngine.Get_String(ref line).ToUpperInvariant();
+                        Name = engine.Get_String(ref line).ToUpperInvariant();
+                        p1 = engine.Get_String(ref line).ToUpperInvariant();
                         if (p1 != "NULL" && p1.Length != 0)
                         {
                             //gotta find this class... and copy over it's stuff
-                            if (ScriptEngine.Classes.ContainsKey(p1))
+                            if (engine.Classes.ContainsKey(p1))
                             {
-                                Script_Class sc = (Script_Class)ScriptEngine.Classes[p1];
+                                Script_Class sc = (Script_Class)engine.Classes[p1];
 
                                 foreach (ScriptVariable nv in sc._Variables)
                                 {
@@ -163,7 +163,7 @@ namespace L2Robot
                             }
                             else
                             {
-                                ScriptEngine.Script_Error("CLASS [" + p1 + "] NOT LOADED PRIOR TO USAGE");
+                                engine.Script_Error("CLASS [" + p1 + "] NOT LOADED PRIOR TO USAGE");
                             }
                         }
                         break;
@@ -194,13 +194,13 @@ namespace L2Robot
         public SortedList _Variables = new SortedList();//ArrayList
         public bool Initialized = false;
 
-        public void Init(string _name)
+        public void Init(ScriptEngine engine, string _name)
         {
             Name = _name.ToUpperInvariant();
 
-            if (ScriptEngine.Classes.ContainsKey(Name))
+            if (engine.Classes.ContainsKey(Name))
             {
-                Script_Class sc = (Script_Class)ScriptEngine.Classes[Name];
+                Script_Class sc = (Script_Class)engine.Classes[Name];
                 //found our class... need to copy over the variables now
                 foreach (ScriptVariable sv in sc._Variables)
                 {

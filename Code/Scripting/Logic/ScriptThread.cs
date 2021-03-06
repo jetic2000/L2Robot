@@ -24,10 +24,10 @@ namespace L2Robot
             Sleep_Until = System.DateTime.Today.AddDays(100);
         }
 
-        public void Kill()
+        public void Kill(GameData gamedata)
         {
             Stop();
-            ScriptEngine.Threads.Remove(ID);
+            gamedata.scriptthread.Threads.Remove(ID);
         }
     }
 }

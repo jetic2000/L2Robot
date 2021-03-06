@@ -98,37 +98,7 @@ namespace L2Robot
             return (ExtendedEffects & (uint)test) != 0;
         }
 
-        public bool PriorityTarget()
-        {
-            if (this.TargetID == 0)
-            {
-                return false;
-            }
-
-            //check if targeting any party member
-            Globals.PartyLock.EnterReadLock();
-            try
-            {
-                if (Globals.gamedata.PartyMembers.ContainsKey(this.TargetID))
-                {
-                    return true;
-                }
-            }
-            finally
-            {
-                Globals.PartyLock.ExitReadLock();
-            }
-
-            //check if targeting any out of party member
-            if (Globals.gamedata.botoptions.OOP == 1 && Globals.gamedata.botoptions.OOPIDs.Contains(this.TargetID))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        public bool CheckCombat()
+        public bool CheckCombat(GameData gamedata)
         {
             //if we are in combat, check against player and party
             if (isInCombat == 0)
@@ -141,12 +111,7 @@ namespace L2Robot
                 //currently... not in combat if target is targeting us, friendly, or npc
                 //if we are targeting the player return false
 
-                if (this.TargetID == Globals.gamedata.my_char.ID)
-                {
-                    return false;
-                }
-
-                if (PriorityTarget())
+                if (this.TargetID == gamedata.my_char.ID)
                 {
                     return false;
                 }
@@ -156,7 +121,7 @@ namespace L2Robot
                 Globals.PlayerLock.EnterReadLock();
                 try
                 {
-                    char_target = Util.GetChar(TargetID);
+                    char_target = Util.GetChar(gamedata, TargetID);
                 }
                 finally
                 {
@@ -460,8 +425,8 @@ namespace L2Robot
                 buff.ReadInt32();
                 buff.ReadInt16();
                 NPCID = buff.ReadUInt32();
-                Name = Util.GetNPCName(NPCID);
-                Title = Util.GetNPCTitle(NPCID);
+                //Name = Util.GetNPCName(NPCID);
+                //Title = Util.GetNPCTitle(NPCID);
                 X = buff.ReadInt32();
                 Y = buff.ReadInt32();
                 Z = buff.ReadInt32();
@@ -553,14 +518,14 @@ namespace L2Robot
             */
             if (Name.Length == 0)
             {
-                Name = Util.GetNPCName(NPCID);
+                //Name = Util.GetNPCName(NPCID);
             }
             Title = buff.ReadString();
 
             //try and get the title for npcs (mobs, not summons)
             if (Title.Length == 0)
             {
-                Title = Util.GetNPCTitle(NPCID);
+                //Title = Util.GetNPCTitle(NPCID);
             }
 
             //if that failed, we get the NPC's master's title... mobs get their name as their title, o well
@@ -646,7 +611,7 @@ namespace L2Robot
             Name = buff.ReadString();
             if (Name.Length == 0)
             {
-                Name = Util.GetNPCName(NPCID);
+                //Name = Util.GetNPCName(NPCID);
             }
 
             //buff.ReadUInt32(); //type
@@ -733,7 +698,7 @@ namespace L2Robot
 
             ID = buff.ReadUInt32();
             NPCID = buff.ReadUInt32();
-            Name = Util.GetNPCName(NPCID);
+            //Name = Util.GetNPCName(NPCID);
 
             buff.ReadUInt32(); //type
             isAttackable = buff.ReadUInt32();

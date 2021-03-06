@@ -139,9 +139,9 @@ namespace L2Robot
         }
 
 
-        public AstarNode findStartNode()
+        public AstarNode findStartNode(GameData gamedata)
         {
-            startNode = allocNode(Globals.gamedata.my_char.X, Globals.gamedata.my_char.Y, 0, 0);
+            startNode = allocNode(gamedata, gamedata.my_char.X, gamedata.my_char.Y, 0, 0);
 #if DEBUG
             ////Globals.l2net_home.Add_Debug("Found Start Node:" + startNode);
 #endif
@@ -212,7 +212,7 @@ namespace L2Robot
 
         }
 
-        public bool findTargetNode(double x, double y)
+        public bool findTargetNode(GameData gamedata, double x, double y)
         {
 
             //Generate nodes until we reach target, standard manhattan distance used to find it.
@@ -243,13 +243,13 @@ namespace L2Robot
                     nodelist.Clear();
                     return false;
                 }
-                currentNode = buildNode(currentNode, direction);
+                currentNode = buildNode(gamedata, currentNode, direction);
 
             }
 
         }
 
-        public void findAdjacentNodes(AstarNode node)
+        public void findAdjacentNodes(GameData gamedata, AstarNode node)
         {
             AstarNode tmpNodePtr;
             if (node.adjacentNodes.Count != 0)
@@ -261,7 +261,7 @@ namespace L2Robot
             tmpNodePtr = getNode(node.xpos, node.ypos - 1);
             if (tmpNodePtr == null)
             {
-                tmpNodePtr = buildNode(node, NORTH);
+                tmpNodePtr = buildNode(gamedata, node, NORTH);
             }
             else
             {
@@ -275,7 +275,7 @@ namespace L2Robot
             tmpNodePtr = getNode(node.xpos, node.ypos + 1);
             if (tmpNodePtr == null)
             {
-                tmpNodePtr = buildNode(node, SOUTH);
+                tmpNodePtr = buildNode(gamedata, node, SOUTH);
             }
             else
             {
@@ -289,7 +289,7 @@ namespace L2Robot
             tmpNodePtr = getNode(node.xpos + 1, node.ypos);
             if (tmpNodePtr == null)
             {
-                tmpNodePtr = buildNode(node, EAST);
+                tmpNodePtr = buildNode(gamedata, node, EAST);
             }
             else
             {
@@ -303,7 +303,7 @@ namespace L2Robot
             tmpNodePtr = getNode(node.xpos - 1, node.ypos);
             if (tmpNodePtr == null)
             {
-                tmpNodePtr = buildNode(node, WEST);
+                tmpNodePtr = buildNode(gamedata, node, WEST);
             }
             else
             {
@@ -318,7 +318,7 @@ namespace L2Robot
             tmpNodePtr = getNode(node.xpos - 1, node.ypos - 1);
             if (tmpNodePtr == null)
             {
-                tmpNodePtr = buildNode(node, NORTHWEST);
+                tmpNodePtr = buildNode(gamedata, node, NORTHWEST);
             }
             else
             {
@@ -332,7 +332,7 @@ namespace L2Robot
             tmpNodePtr = getNode(node.xpos - 1, node.ypos + 1);
             if (tmpNodePtr == null)
             {
-                tmpNodePtr = buildNode(node, SOUTHWEST);
+                tmpNodePtr = buildNode(gamedata, node, SOUTHWEST);
             }
             else
             {
@@ -345,7 +345,7 @@ namespace L2Robot
             tmpNodePtr = getNode(node.xpos + 1, node.ypos - 1);
             if (tmpNodePtr == null)
             {
-                tmpNodePtr = buildNode(node, NORTHEAST);
+                tmpNodePtr = buildNode(gamedata, node, NORTHEAST);
             }
             else
             {
@@ -359,7 +359,7 @@ namespace L2Robot
             tmpNodePtr = getNode(node.xpos + 1, node.ypos + 1);
             if (tmpNodePtr == null)
             {
-                tmpNodePtr = buildNode(node, SOUTHEAST);
+                tmpNodePtr = buildNode(gamedata, node, SOUTHEAST);
             }
             else
             {
@@ -372,49 +372,49 @@ namespace L2Robot
         }
 
 
-        public void expand(AstarNode parent)
+        public void expand(GameData gamedata, AstarNode parent)
         {
             AstarNode tmpNode;
 
-            tmpNode = buildNode(parent, NORTH);
+            tmpNode = buildNode(gamedata, parent, NORTH);
             tmpNode.parent = parent;
             //parent.adjacentNodes.Add(tmpNode);
             insertSorted(parent.adjacentNodes, tmpNode);
 
-            tmpNode = buildNode(parent, SOUTH);
+            tmpNode = buildNode(gamedata, parent, SOUTH);
             tmpNode.parent = parent;
             // parent.adjacentNodes.Add(tmpNode);
             insertSorted(parent.adjacentNodes, tmpNode);
 
-            tmpNode = buildNode(parent, EAST);
+            tmpNode = buildNode(gamedata, parent, EAST);
             tmpNode.parent = parent;
             // parent.adjacentNodes.Add(tmpNode);
             insertSorted(parent.adjacentNodes, tmpNode);
 
-            tmpNode = buildNode(parent, WEST);
+            tmpNode = buildNode(gamedata, parent, WEST);
             tmpNode.parent = parent;
             // parent.adjacentNodes.Add(tmpNode);
             insertSorted(parent.adjacentNodes, tmpNode);
 
-            tmpNode = buildNode(parent, NORTHWEST);
+            tmpNode = buildNode(gamedata, parent, NORTHWEST);
             tmpNode.parent = parent;
             tmpNode.diagonal = true;
             // parent.adjacentNodes.Add(tmpNode);
             insertSorted(parent.adjacentNodes, tmpNode);
 
-            tmpNode = buildNode(parent, SOUTHWEST);
+            tmpNode = buildNode(gamedata, parent, SOUTHWEST);
             tmpNode.parent = parent;
             tmpNode.diagonal = true;
             //parent.adjacentNodes.Add(tmpNode);
             insertSorted(parent.adjacentNodes, tmpNode);
 
-            tmpNode = buildNode(parent, NORTHEAST);
+            tmpNode = buildNode(gamedata, parent, NORTHEAST);
             tmpNode.parent = parent;
             tmpNode.diagonal = true;
             // parent.adjacentNodes.Add(tmpNode);
             insertSorted(parent.adjacentNodes, tmpNode);
 
-            tmpNode = buildNode(parent, SOUTHEAST);
+            tmpNode = buildNode(gamedata, parent, SOUTHEAST);
             tmpNode.parent = parent;
             tmpNode.diagonal = true;
             // parent.adjacentNodes.Add(tmpNode);
@@ -471,17 +471,17 @@ namespace L2Robot
          * This function returns FALSE if the node is NOT PASSABLE. TRUE if it IS
          * 
          */
-        public bool checkNodeWalls(AstarNode node)
+        public bool checkNodeWalls(GameData gamedata, AstarNode node)
         {
-            for (int i = 0; i < Globals.gamedata.Walls.Count; i++)
+            for (int i = 0; i < gamedata.Walls.Count; i++)
             {
                 // ////Globals.l2net_home.Add_Debug("Checking node:" + j);
                 //west wall
                 if (isIntersecting(node.x, node.y, node.x, node.y2,
-                                  ((Wall)Globals.gamedata.Walls[i]).P1.X,
-                                  ((Wall)Globals.gamedata.Walls[i]).P1.Y,
-                                  ((Wall)Globals.gamedata.Walls[i]).P2.X,
-                                  ((Wall)Globals.gamedata.Walls[i]).P2.Y))
+                                  ((Wall)gamedata.Walls[i]).P1.X,
+                                  ((Wall)gamedata.Walls[i]).P1.Y,
+                                  ((Wall)gamedata.Walls[i]).P2.X,
+                                  ((Wall)gamedata.Walls[i]).P2.Y))
                 {
                     return false;
                     // ////Globals.l2net_home.Add_Debug("found intersetction west!");
@@ -489,10 +489,10 @@ namespace L2Robot
                 }
                 //east wall
                 else if (isIntersecting(node.x2, node.y, node.x2, node.y2,
-                                  ((Wall)Globals.gamedata.Walls[i]).P1.X,
-                                  ((Wall)Globals.gamedata.Walls[i]).P1.Y,
-                                  ((Wall)Globals.gamedata.Walls[i]).P2.X,
-                                  ((Wall)Globals.gamedata.Walls[i]).P2.Y))
+                                  ((Wall)gamedata.Walls[i]).P1.X,
+                                  ((Wall)gamedata.Walls[i]).P1.Y,
+                                  ((Wall)gamedata.Walls[i]).P2.X,
+                                  ((Wall)gamedata.Walls[i]).P2.Y))
                 {
                     return false;
                     //  ////Globals.l2net_home.Add_Debug("found intersetction east!");
@@ -500,10 +500,10 @@ namespace L2Robot
                 }
                 //north wall
                 else if (isIntersecting(node.x, node.y, node.x2, node.y,
-                                  ((Wall)Globals.gamedata.Walls[i]).P1.X,
-                                  ((Wall)Globals.gamedata.Walls[i]).P1.Y,
-                                  ((Wall)Globals.gamedata.Walls[i]).P2.X,
-                                  ((Wall)Globals.gamedata.Walls[i]).P2.Y))
+                                  ((Wall)gamedata.Walls[i]).P1.X,
+                                  ((Wall)gamedata.Walls[i]).P1.Y,
+                                  ((Wall)gamedata.Walls[i]).P2.X,
+                                  ((Wall)gamedata.Walls[i]).P2.Y))
                 {
                     return false;
                     // ////Globals.l2net_home.Add_Debug("found intersetction! north");
@@ -512,10 +512,10 @@ namespace L2Robot
 
                 //south wall
                 else if (isIntersecting(node.x, node.y2, node.x2, node.y2,
-                                  ((Wall)Globals.gamedata.Walls[i]).P1.X,
-                                  ((Wall)Globals.gamedata.Walls[i]).P1.Y,
-                                  ((Wall)Globals.gamedata.Walls[i]).P2.X,
-                                  ((Wall)Globals.gamedata.Walls[i]).P2.Y))
+                                  ((Wall)gamedata.Walls[i]).P1.X,
+                                  ((Wall)gamedata.Walls[i]).P1.Y,
+                                  ((Wall)gamedata.Walls[i]).P2.X,
+                                  ((Wall)gamedata.Walls[i]).P2.Y))
                 {
                     return false;
                     //   ////Globals.l2net_home.Add_Debug("found intersetction! south");
@@ -600,7 +600,7 @@ namespace L2Robot
          * This function performs a basic depth first search with a depth limit provided by the minimum of 
          * the costs of the potential siblings. Additionally it orders the children it searchs in best first
          * order. It has linear space and memory complexity. */
-        public bool IDAStar(AstarNode node)
+        public bool IDAStar(GameData gamedata, AstarNode node)
         {
             int bound = 50;
             while (bound > 0)
@@ -608,7 +608,7 @@ namespace L2Robot
 #if DEBUG
                 ////Globals.l2net_home.Add_Debug("updated bound:" + bound);
 #endif
-                bound = DFS(node, bound);
+                bound = DFS(gamedata, node, bound);
                 //  if (bound == INFINITY)
                 //  return false;
                 //DFS(node, bound);
@@ -619,7 +619,7 @@ namespace L2Robot
         }
 
         /* Depth First Search Function */
-        private int DFS(AstarNode node, int bound)
+        private int DFS(GameData gamedata, AstarNode node, int bound)
         {
             node.fvalue = calcFvalue(node);
 
@@ -644,7 +644,7 @@ namespace L2Robot
             //get children
             node.adjacentNodes.Clear();
             //expand(node);
-            findAdjacentNodes(node); //we might be able to get away with this instead...
+            findAdjacentNodes(gamedata, node); //we might be able to get away with this instead...
 
             //calc F value for each child
             foreach (AstarNode n in node.adjacentNodes)
@@ -669,7 +669,7 @@ namespace L2Robot
                     // if(!checkPathForNode(n))
                     {
                         int temp;
-                        temp = DFS(n, bound);
+                        temp = DFS(gamedata, n, bound);
                         if (temp == 0)
                         {
                             return 0; //we wont get any lower than 0
@@ -715,7 +715,7 @@ namespace L2Robot
 
 
         /* Standard A* */
-        public bool Astar_start(AstarNode startNode, AstarNode targetNode)
+        public bool Astar_start(GameData gamedata, AstarNode startNode, AstarNode targetNode)
         {
             ArrayList closedlist = new ArrayList();
             ArrayList openlist = new ArrayList();
@@ -740,7 +740,7 @@ namespace L2Robot
                 openlist.Remove(xNode);
                 closedlist.Add(xNode);
                 pathNodes.Add(xNode);
-                findAdjacentNodes(xNode);
+                findAdjacentNodes(gamedata, xNode);
 
                 foreach (AstarNode yNode in xNode.adjacentNodes)
                 {
@@ -783,7 +783,7 @@ namespace L2Robot
 
         /* Fringe Search 
          * Fringe search is a memory enchanced version of IDA* */
-        public bool fringeSearch()
+        public bool fringeSearch(GameData gamedata)
         {
             //initialize:
             ArrayList nowList = new ArrayList();
@@ -835,7 +835,7 @@ namespace L2Robot
                     else
                     {
                         #region expand head's children on to now list
-                        expand(head); //nodes are sorted by insert sort in this function
+                        expand(gamedata, head); //nodes are sorted by insert sort in this function
 
                         bool addedChildren = false;
                         foreach (AstarNode child in head.adjacentNodes)
@@ -1149,7 +1149,7 @@ namespace L2Robot
             return null;
         }
 
-        public AstarNode allocNode(double X, double Y, int Xpos, int Ypos)
+        public AstarNode allocNode(GameData gamedata, double X, double Y, int Xpos, int Ypos)
         {
             try
             {
@@ -1162,7 +1162,7 @@ namespace L2Robot
                 tmpNode.xpos = Xpos;
                 tmpNode.ypos = Ypos;
 
-                tmpNode.passable = checkNodeWalls(tmpNode);
+                tmpNode.passable = checkNodeWalls(gamedata, tmpNode);
 
                 tmpNode.calcMidPoint();
                 // nodelist.Add(tmpNode); nodelist is now only useful for debugging...
@@ -1176,34 +1176,34 @@ namespace L2Robot
 
         }
 
-        public AstarNode buildNode(AstarNode parent, int direction)
+        public AstarNode buildNode(GameData gamedata, AstarNode parent, int direction)
         {
             AstarNode tmpNode;
             switch (direction)
             {
                 case NORTH:
-                    tmpNode = allocNode(parent.x, parent.y - gridSize, parent.xpos, parent.ypos - 1);
+                    tmpNode = allocNode(gamedata, parent.x, parent.y - gridSize, parent.xpos, parent.ypos - 1);
                     break;
                 case SOUTH:
-                    tmpNode = allocNode(parent.x, parent.y + gridSize, parent.xpos, parent.ypos + 1);
+                    tmpNode = allocNode(gamedata, parent.x, parent.y + gridSize, parent.xpos, parent.ypos + 1);
                     break;
                 case EAST:
-                    tmpNode = allocNode(parent.x + gridSize, parent.y, parent.xpos + 1, parent.ypos);
+                    tmpNode = allocNode(gamedata, parent.x + gridSize, parent.y, parent.xpos + 1, parent.ypos);
                     break;
                 case WEST:
-                    tmpNode = allocNode(parent.x - gridSize, parent.y, parent.xpos - 1, parent.ypos);
+                    tmpNode = allocNode(gamedata, parent.x - gridSize, parent.y, parent.xpos - 1, parent.ypos);
                     break;
                 case NORTHEAST:
-                    tmpNode = allocNode(parent.x + gridSize, parent.y - gridSize, parent.xpos + 1, parent.ypos - 1);
+                    tmpNode = allocNode(gamedata, parent.x + gridSize, parent.y - gridSize, parent.xpos + 1, parent.ypos - 1);
                     break;
                 case NORTHWEST:
-                    tmpNode = allocNode(parent.x - gridSize, parent.y - gridSize, parent.xpos - 1, parent.ypos - 1);
+                    tmpNode = allocNode(gamedata, parent.x - gridSize, parent.y - gridSize, parent.xpos - 1, parent.ypos - 1);
                     break;
                 case SOUTHEAST:
-                    tmpNode = allocNode(parent.x + gridSize, parent.y + gridSize, parent.xpos + 1, parent.ypos + 1);
+                    tmpNode = allocNode(gamedata, parent.x + gridSize, parent.y + gridSize, parent.xpos + 1, parent.ypos + 1);
                     break;
                 case SOUTHWEST:
-                    tmpNode = allocNode(parent.x - gridSize, parent.y + gridSize, parent.xpos - 1, parent.ypos + 1);
+                    tmpNode = allocNode(gamedata, parent.x - gridSize, parent.y + gridSize, parent.xpos - 1, parent.ypos + 1);
                     break;
                 default:
                     tmpNode = null;

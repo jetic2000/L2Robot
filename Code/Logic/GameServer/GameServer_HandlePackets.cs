@@ -71,39 +71,30 @@ namespace L2Robot
                             //ClientPackets.Die_Packet(buffe);
                             break;
                         case PServer.NetPing:
-                            ServerPackets.NetPing(this.gamedata, buffe);
+                            //This is tmp solution
+                            //ClientPackets.NetPing(this.gamedata, buffe);
                             break;
                         case PServer.StatusUpdate:
-                            Console.WriteLine("[S]:PServer.StatusUpdate");
+                            //Console.WriteLine("[S]:PServer.StatusUpdate");
                             //ServerPackets.StatusUpdate(this.gamedata, buffe);
+                            break;
+                        case PServer.DeleteObject:
+                            ServerPackets.DeleteItem(this.gamedata, buffe);
                             break;
                         case PServer.EXPacket:
                             b1 = buffe.ReadUInt16();
-                            //buffe.ReadByte();
                             last_p = last_p + " " + b1.ToString("X2");
-                            //Console.WriteLine("Packet EX: {0}", last_p);
-
-                            //do we have an event for this packet?
-                            /*
-                            if (ScriptEngine.ServerPacketsEXContainsKey((int)b1))
-                            {
-                                ScriptEvent sc_ev = new ScriptEvent();
-                                sc_ev.Type = EventType.ServerPacketEX;
-                                sc_ev.Type2 = (int)b1;
-                                sc_ev.Variables.Add(new ScriptVariable(buffe, "PACKET", Var_Types.BYTEBUFFER, Var_State.PUBLIC));
-                                sc_ev.Variables.Add(new ScriptVariable(System.DateTime.Now.Ticks, "TIMESTAMP", Var_Types.INT, Var_State.PUBLIC));
-                                ScriptEngine.SendToEventQueue(sc_ev);
-                            }
-                            */
-                            //Globals.l2net_home.Add_Text(last_p);
                             switch ((PServerEX)b1)
                             {
                                 case PServerEX.ExUserinfoStats:
                                     //ClientPackets.ExUserInfoStats(buffe);
                                     break;
                                 case PServerEX.ExUserInfo:
-                                    Console.WriteLine("[S]:PServerEX.ExUserInfo");
+                                    //Console.WriteLine("[S]:PServerEX.ExUserInfo");
                                     ServerPackets.EXUserInfo(this.gamedata, buffe);
+                                    break;
+                                case PServerEX.ExSetCompassZoneCode:
+                                    ServerPackets.ExSetCompassZoneCode(this.gamedata, buffe);
                                     break;
                             }
                             break;

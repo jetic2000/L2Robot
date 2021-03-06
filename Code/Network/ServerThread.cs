@@ -75,7 +75,8 @@ namespace L2Robot
                         }
 
                         buff = bbuffer0.Get_ByteArray();
-
+                        
+                        //Console.WriteLine("[TO S]:" + BitConverter.ToString(buff, 0).Replace("-", string.Empty).ToLower());
                         /*if (L2NET.Mixer != null)
                         {
                             L2NET.Mixer.Encrypt0(buff);
@@ -156,12 +157,32 @@ namespace L2Robot
                         {
                             handle = true;
                             forward = true;
-                            //bbuffer0 = new ByteBuffer(buffpacket);
+                            bbuffer0 = new ByteBuffer(buffpacket);
+                            bbuffer1 = new ByteBuffer(buffpacket);
+                            
+                            //TODO: Must ensure script running after IG login
+                            if (this.gamedata.CurrentScriptState == ScriptState.Running)
+                            {
+                                if ((PServer)buffpacket[0] == PServer.EXPacket)
+                                {
+                                    if (this.gamedata.scriptthread.Blocked_ServerPacketsEX.ContainsKey(Convert.ToInt32(buffpacket[1] + buffpacket[2] << 8)))
+                                    {
+                                        forward = false;
+                                    }
+                                }
+                                else
+                                {
+                                    if (this.gamedata.scriptthread.Blocked_ServerPackets.ContainsKey(Convert.ToInt32(buffpacket[0])))
+                                    {
+                                        forward = false;
+                                    }
+                                }
+                            }
 
                             switch ((PServer)buffpacket[0])
                             {
                                 case PServer.VersionCheck:
-                                    Console.WriteLine("[S]:" + BitConverter.ToString(buffpacket, 0).Replace("-", string.Empty).ToLower());
+                                    //Console.WriteLine("[S]:" + BitConverter.ToString(buffpacket, 0).Replace("-", string.Empty).ToLower());
                                     handle = false;
                                     forward = false;
                                     this.gamedata.game_key[0] = buffpacket[2];
@@ -194,19 +215,6 @@ namespace L2Robot
 
                                     Console.WriteLine("Obfuscation_Key: {0:X}", this.gamedata.Obfuscation_Key);
 
-                                    
-                                    {
-                                        //need to send this here... so it dones't get encrypted
-                                        byte[] key_send = new byte[2 + buffpacket.Length];
-                                        byte[] b2 = BitConverter.GetBytes((short)key_send.Length);
-                                        key_send[0] = b2[0];
-                                        key_send[1] = b2[1];
-
-                                        buffpacket.CopyTo(key_send, 2);
-                                        this.gamedata.Game_ClientSocket.Send(key_send);
-                                        Console.WriteLine("gameserver:{0} - keys forwarded to client", this.gamedata.Server_ID);
-                                    }
-                                    
                                     try
                                     {
                                         //this.gamedata.Mixer = new MixedPackets(this.gamedata, BitConverter.ToInt32(buffpacket, 19));
@@ -230,19 +238,31 @@ namespace L2Robot
                                     this.gamedata.crypt_clientin.setKey(this.gamedata.game_key);
                                     this.gamedata.crypt_clientout.setKey(this.gamedata.game_key);
                                     this.gamedata.logged_in = true;
+
+                                    {
+                                        //need to send this here... so it dones't get encrypted
+                                        byte[] key_send = new byte[2 + buffpacket.Length];
+                                        byte[] b2 = BitConverter.GetBytes((short)key_send.Length);
+                                        key_send[0] = b2[0];
+                                        key_send[1] = b2[1];
+
+                                        buffpacket.CopyTo(key_send, 2);
+                                        this.gamedata.Game_ClientSocket.Send(key_send);
+                                        Console.WriteLine("gameserver:{0} - keys forwarded to client", this.gamedata.Server_ID);
+                                    }
                                     break;
                                 default:
                                     break;
                             }
                             if (forward)
                             {
-                                //Console.WriteLine("[S]:" + BitConverter.ToString(buffpacket, 0).Replace("-", string.Empty).ToLower());
-                                bbuffer0 = new ByteBuffer(buffpacket);
+                                Console.WriteLine("[S]:" + BitConverter.ToString(buffpacket, 0).Replace("-", string.Empty).ToLower());
+                                //bbuffer0 = new ByteBuffer(buffpacket);
                                 this.gamedata.SendToClient(bbuffer0);
                             }
                             if (handle)
                             {
-                                bbuffer1 = new ByteBuffer(buffpacket);
+                                //bbuffer1 = new ByteBuffer(buffpacket);
                                 this.gamedata.SendToBotRead(bbuffer1);
                             }
                         }

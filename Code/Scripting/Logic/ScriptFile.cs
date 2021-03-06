@@ -5,13 +5,12 @@ namespace L2Robot
     class ScriptFile
     {
         public ArrayList _ScriptLines = new ArrayList();
-
         public SortedList _labellist = new SortedList();
         public SortedList _functionlist = new SortedList();
         public SortedList _sublist = new SortedList();
         public string Name = "";
 
-        public void ReadScript(System.IO.StreamReader filein)
+        public void ReadScript(ScriptEngine engine, System.IO.StreamReader filein)
         {
             _ScriptLines.Clear();
 
@@ -24,9 +23,9 @@ namespace L2Robot
                 ScriptLine sl = new ScriptLine();
                 sl.FullLine = line;
 
-                string cmd = ScriptEngine.Get_String(ref line, false).ToUpperInvariant();
+                string cmd = engine.Get_String(ref line, false).ToUpperInvariant();
 
-                sl.Command = ScriptEngine.GetCommandType(cmd);
+                sl.Command = engine.GetCommandType(cmd);
 
                 switch (sl.Command)
                 {

@@ -16,49 +16,105 @@ namespace L2Robot
 
         public static void EXUserInfo(GameData gamedata, ByteBuffer buffe)
         {
-            int loc = buffe.GetIndex();
-            uint ID = buffe.ReadUInt32();//A0 B9 B0 49
-            Console.WriteLine("User ID: 0x{0:x}", ID);
-            buffe.ReadInt32();
-            buffe.ReadInt32();
-            buffe.ReadInt32();
-            buffe.ReadInt32();
-            buffe.ReadByte();
-            string name = ""; //= buffe.ReadString();
-
-            buffe.SetIndex(loc);
-
-            //this packet only gets sent once
-            if (name == gamedata.my_char.Name)
-            {
-
-            }
-            else
-            {
-
-            }
+            CharInfo player = new CharInfo();
+            player.Load(buffe);
+            AddInfo.Add_CharInfo(gamedata, player);
+            Console.WriteLine("Num of near char : {0}", gamedata.nearby_chars.Count);
         }
+
+        public static void ExSetCompassZoneCode(GameData gamedata, ByteBuffer buff)
+        {
+            uint type = buff.ReadUInt32();//
+            gamedata.cur_zone = type;
+        }
+
 
         public static void NetPing(GameData gamedata, ByteBuffer buffe)
         {
 
-            byte cID_0 = buffe.ReadByte();
-            byte cID_1 = buffe.ReadByte();
-            byte cID_2 = buffe.ReadByte();
-            byte cID_3 = buffe.ReadByte();
+        }
 
-            ByteBuffer breply = new ByteBuffer(13);
+        public static void DeleteItem(GameData gamedata, ByteBuffer buffe)
+        {
+            uint dead_object = buffe.ReadUInt32();//System.BitConverter.ToInt32(buffe,1);
+            //buffe.ReadUInt32();
+            //4 bytes of poop after the objid
+            
+            /* Add back later: Jack
+            if (gamedata.my_char.MoveTarget == dead_object)
+            {
+                gamedata.my_char.Moving = false;
+                gamedata.my_char.MoveTarget = 0;
+                gamedata.my_char.MoveTargetType = TargetType.NONE;
+                gamedata.my_char.Dest_X = gamedata.my_char.X;
+                gamedata.my_char.Dest_Y = gamedata.my_char.Y;
+                gamedata.my_char.Dest_Z = gamedata.my_char.Z;
+            }
 
-            breply.WriteByte((byte)PClient.NetPingReply);
+            Globals.PlayerLock.EnterReadLock();
+            try
+            {
+                foreach (CharInfo player in gamedata.nearby_chars.Values)
+                {
+                    if (player.MoveTarget == dead_object)
+                    {
+                        player.Moving = false;
+                        player.MoveTarget = 0;
+                        player.MoveTargetType = TargetType.NONE;
+                        player.Dest_X = player.X;
+                        player.Dest_Y = player.Y;
+                        player.Dest_Z = player.Z;
+                    }
+                }
+            }
+            catch
+            {
+                //oops
+            }
+            finally
+            {
+                Globals.PlayerLock.ExitReadLock();
+            }
 
-            breply.WriteByte(cID_0);
-            breply.WriteByte(cID_1);
-            breply.WriteByte(cID_2);
-            breply.WriteByte(cID_3);
+            Globals.NPCLock.EnterReadLock();
+            try
+            {
+                foreach (NPCInfo npc in gamedata.nearby_npcs.Values)
+                {
+                    if (npc.MoveTarget == dead_object)
+                    {
+                        npc.Moving = false;
+                        npc.MoveTarget = 0;
+                        npc.MoveTargetType = TargetType.NONE;
+                        npc.Dest_X = npc.X;
+                        npc.Dest_Y = npc.Y;
+                        npc.Dest_Z = npc.Z;
+                    }
+                }
+            }
+            catch
+            {
+                //oops
+            }
+            finally
+            {
+                Globals.NPCLock.ExitReadLock();
+            }
+            */
 
-            breply.WriteInt32(Globals.Rando.Next(5, 15));
-            breply.WriteInt32(0x660E);
-            gamedata.SendToGameServer(breply);
+            switch (Util.GetType(gamedata, dead_object))
+            {
+                case TargetType.PLAYER:
+                    AddInfo.Remove_CharInfo(gamedata, dead_object);
+                    //Globals.l2net_home.timer_players.Start();
+                    break;
+                case TargetType.NPC:
+                    AddInfo.Remove_NPCInfo(gamedata, dead_object);
+                    //Globals.l2net_home.timer_npcs.Start();
+                    break;
+            }
+
+            //need to check if anything had this targeted and set it's Dest_ to the current location
         }
 
     }//end of class

@@ -27,9 +27,11 @@ namespace L2Robot
     public partial class ScriptEngine
     {
         public Thread scriptthread;
+        GameData gamedata;
 
-        public ScriptEngine()
+        public ScriptEngine(GameData gamedata)
         {
+            this.gamedata = gamedata;
             Reset_Script();
         }
 
@@ -79,7 +81,6 @@ namespace L2Robot
             new_line.FullLine = line;
 
             string cmd = Get_String(ref line).ToUpperInvariant();
-
             new_line.Command = GetCommandType(cmd);
             new_line.UnParsedParams = line;
 
@@ -97,6 +98,7 @@ namespace L2Robot
 			try
 			{
 #endif
+            Console.WriteLine("Proccess_Line(), cmd: {0}", my_command);
             switch (my_command)
             {
                 case ScriptCommands.SET:
@@ -232,15 +234,16 @@ namespace L2Robot
                     do_advance = true;
                     break;
                 case ScriptCommands.PAUSE:
-                    Globals.gamedata.CurrentScriptState = ScriptState.Paused;//ok, stopped
+                    this.gamedata.CurrentScriptState = ScriptState.Paused;//ok, stopped
                     do_advance = true;
                     break;
                 case ScriptCommands.END_OF_FILE:
-                    Globals.gamedata.CurrentScriptState = ScriptState.EOF;
+                    this.gamedata.CurrentScriptState = ScriptState.EOF;
                     break;
                 case ScriptCommands.END_SCRIPT:
-                    Globals.gamedata.CurrentScriptState = ScriptState.Finished;
+                    this.gamedata.CurrentScriptState = ScriptState.Finished;
                     do_advance = true;
+                    Console.WriteLine("ScriptCommands.END_SCRIPT");
                     //Globals.l2net_home.SetStartScript();
                     break;
                 case ScriptCommands.JUMP_TO_LINE:
@@ -269,291 +272,12 @@ namespace L2Robot
                     Script_HEX_TO_DEC(line);
                     do_advance = true;
                     break;
-                case ScriptCommands.DELETE_SHORTCUT:
-                    Script_DELETE_SHORTCUT(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.REGISTER_SHORTCUT:
-                    Script_REGISTER_SHORTCUT(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.USE_SHORTCUT:
-                    Script_USE_SHORTCUT(line);
-                    do_advance = true;
-                    break;
                 case ScriptCommands.TARGET_SELF:
                     Script_TARGET_SELF();
                     do_advance = true;
                     break;
                 case ScriptCommands.CANCEL_TARGET:
                     Script_CANCEL_TARGET();
-                    do_advance = true;
-                    break;
-#if false
-                case ScriptCommands.UDP_SEND:
-                    Script_UDP_SEND(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.UDP_SENDBB:
-                    Script_UDP_SENDBB(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.UDP_IP_SEND:
-                    Script_UDP_IP_SEND(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.UDP_IP_SENDBB:
-                    Script_UDP_IP_SENDBB(line);
-                    do_advance = true;
-                    break;
-#endif
-                case ScriptCommands.SLEEP_HUMAN_READING:
-                    Script_SLEEP_HUMAN_READING(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.SLEEP_HUMAN_WRITING:
-                    Script_SLEEP_HUMAN_WRITING(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.GET_ELIZA:
-                    Script_GET_ELIZA(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.GET_NPCS:
-                    Script_GET_NPCS(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.GET_INVENTORY:
-                    Script_GET_INVENTORY(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.GET_ITEMS:
-                    Script_GET_ITEMS(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.GET_PARTY:
-                    Script_GET_PARTY(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.GET_PLAYERS:
-                    Script_GET_PLAYERS(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.FORCE_LOG:
-                    Script_FORCE_LOG();
-                    do_advance = true;
-                    break;
-                case ScriptCommands.IGNORE_ITEM:
-                    Script_IGNORE_ITEM(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.CRYSTALIZE_ITEM:
-                    Script_CRYSTALIZE_ITEM(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.DELETE_ITEM:
-                    Script_DELETE_ITEM(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.DROP_ITEM:
-                    Script_DROP_ITEM(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.BOTSET:
-                    Script_BOTSET(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.INJECTBB_CLIENT:
-                    Script_INJECTBB_CLIENT(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.INJECT_CLIENT:
-                    Script_INJECT_CLIENT(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.COMMAND:
-                    Script_COMMAND(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.CLICK_NEAREST_ITEM:
-                    Script_CLICK_NEAREST_ITEM();
-                    do_advance = true;
-                    break;
-                case ScriptCommands.CLEAR_WALLS:
-                    Globals.gamedata.Walls.Clear();
-                    do_advance = true;
-                    break;
-                case ScriptCommands.ADD_WALL:
-                    Script_ADD_WALL(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.CLEAR_BORDER:
-                    Globals.gamedata.Paths.ClearBorder();
-                    do_advance = true;
-                    break;
-                case ScriptCommands.ADD_BORDER_PT:
-                    Script_ADD_PATH_PT(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.NPC_DIALOG:
-                    Script_NPC_DIALOG(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.CHECK_TARGETING:
-                    Script_CHECK_TARGETING(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.SET_TARGETING:
-                    Script_SET_TARGETING(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.TARGET_NEAREST:
-                    Script_TARGET_NEAREST();
-                    do_advance = true;
-                    break;
-                case ScriptCommands.TARGET_NEAREST_NAME:
-                    Script_TARGET_NEAREST_NAME(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.TARGET_NEAREST_ID:
-                    Script_TARGET_NEAREST_ID(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.TARGET:
-                    Script_TARGET(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.TALK_TARGET:
-                    Script_TALK_TARGET();
-                    do_advance = true;
-                    break;
-                case ScriptCommands.ATTACK_TARGET:
-                    Script_ATTACK_TARGET();
-                    do_advance = true;
-                    break;
-                case ScriptCommands.USE_ACTION:
-                    Script_USE_ACTION(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.CANCEL_BUFF:
-                    Script_CANCEL_BUFF(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.USE_SKILL:
-                    Script_USE_SKILL(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.USE_SKILL_SMART:
-                    Script_USE_SKILL_SMART(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.USE_ITEM:
-                    Script_USE_ITEM(line, false);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.USE_ITEM_EXPLICIT:
-                    Script_USE_ITEM(line, true);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.ITEM_COUNT:
-                    Script_ITEM_COUNT(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.MOVE_TO:
-                    Script_MOVE_TO(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.MOVR_WAIT:
-                    Script_MOVE_WAIT(line);
-                    break;
-                case ScriptCommands.MOVE_SMART:
-                    Script_MOVE_SMART(line);
-                    break;
-                case ScriptCommands.MOVE_INTERRUPT:
-                    Script_MOVE_INTERRUPT();
-                    break;
-                case ScriptCommands.SAY_TEXT:
-                    Script_SAY_TEXT(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.SAY_TO_CLIENT:
-                    Script_SAY_TO_CLIENT(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.INVEN_GET_UID:
-                    Script_INVEN_GET_UID(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.INVEN_GET_ITEMID:
-                    Script_INVEN_GET_ITEMID(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.CHAR_GET_NAME:
-                    Script_CHAR_GET_NAME(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.CHAR_GET_ID:
-                    Script_CHAR_GET_ID(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.SKILL_GET_REUSE:
-                    Script_SKILL_GET_REUSE(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.SKILL_GET_NAME:
-                    Script_SKILL_GET_NAME(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.SKILL_GET_DESC1:
-                    Script_SKILL_GET_DESC1(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.SKILL_GET_DESC2:
-                    Script_SKILL_GET_DESC2(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.SKILL_GET_DESC3:
-                    Script_SKILL_GET_DESC3(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.SKILL_GET_ID:
-                    Script_SKILL_GET_ID(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.NPC_GET_NAME:
-                    Script_NPC_GET_NAME(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.NPC_GET_ID:
-                    Script_NPC_GET_ID(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.ITEM_GET_NAME:
-                    Script_ITEM_GET_NAME(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.ITEM_GET_DESC:
-                    Script_ITEM_GET_DESC(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.ITEM_GET_ID:
-                    Script_ITEM_GET_ID(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.CLAN_GET_NAME:
-                    Script_CLAN_GET_NAME(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.CLAN_GET_ID:
-                    Script_CLAN_GET_ID(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.TAP_TO:
-                    Script_TAP_TO(line);
-                    do_advance = true;
-                    break;
-                case ScriptCommands.RESTART:
-                    Script_RESTART();
                     do_advance = true;
                     break;
                 case ScriptCommands.BLOCK:
@@ -644,12 +368,19 @@ namespace L2Robot
                     Script_GENERATE_POLY(line);
                     do_advance = true;
                     break;
-                case ScriptCommands.GET_EFFECTS:
-                    Script_GET_EFFECTS(line);
+                case ScriptCommands.TELEPORT:
+                    Script_TELEPORT(line);
                     do_advance = true;
                     break;
-                case ScriptCommands.GET_SKILLS:
-                    Script_GET_SKILLS(line);
+                case ScriptCommands.MOVE_TO:
+                    Script_MOVE_TO(line);
+                    do_advance = true;
+                    break;
+                case ScriptCommands.MOVR_WAIT:
+                    //Script_MOVE_WAIT(line);
+                    break;
+                case ScriptCommands.RESTART:
+                    Script_RESTART();
                     do_advance = true;
                     break;
                 case ScriptCommands.UNKNOWN://unknown command... skip
@@ -687,7 +418,7 @@ namespace L2Robot
             return true;
         }
 
-        public static ScriptCommands GetCommandType(string cmd)
+        public ScriptCommands GetCommandType(string cmd)
         {
             cmd = cmd.ToUpperInvariant();
 
@@ -1060,6 +791,8 @@ namespace L2Robot
                     return ScriptCommands.GET_EFFECTS;
                 case "GET_SKILLS":
                     return ScriptCommands.GET_SKILLS;
+                case "TELEPORT":
+                    return ScriptCommands.TELEPORT;
                 default://UNKNOWN
                     return ScriptCommands.UNKNOWN;
             }
@@ -1067,7 +800,7 @@ namespace L2Robot
 
         private bool IsRunning()
         {
-            if (Globals.gamedata.BOTTING && Globals.gamedata.running && Globals.gamedata.CurrentScriptState == ScriptState.Running)
+            if (this.gamedata.BOTTING && this.gamedata.running && this.gamedata.CurrentScriptState == ScriptState.Running)
             {
                 return true;
             }
@@ -1087,9 +820,9 @@ namespace L2Robot
             ScriptLine line;
             //int while_count = 0;
 
-            if (System.String.Equals(Globals.Script_MainFile, ""))
+            if (System.String.Equals(this.gamedata.Script_File, ""))
             {
-                Globals.gamedata.CurrentScriptState = ScriptState.Stopped;
+                this.gamedata.CurrentScriptState = ScriptState.Stopped;
                 Script_Error("Script Thread entry point not set... did you forget to load first?");
                 //Globals.l2net_home.SetStartScript();
                 return;
@@ -1099,16 +832,16 @@ namespace L2Robot
             is_Moving = false;
             Moving_List.Clear();
 
-            StreamReader filein = new StreamReader(Globals.Script_MainFile);
+            StreamReader filein = new StreamReader(this.gamedata.Script_File);
             ScriptFile sf = new ScriptFile();
-            sf.Name = Globals.Script_MainFile;
-            sf.ReadScript(filein);
+            sf.Name = this.gamedata.Script_File;
+            sf.ReadScript(this.gamedata.scriptthread, filein);
             filein.Close();
 
             Files.Add(sf.Name, sf);
 
             ScriptThread scr_thread = new ScriptThread();
-            scr_thread.Current_File = Globals.Script_MainFile;
+            scr_thread.Current_File = this.gamedata.Script_File;
             scr_thread.Line_Pos = 0;
 
             VariableList stack_bottom = new VariableList();
@@ -1123,7 +856,8 @@ namespace L2Robot
             bool all_sleeping;
             bool time_passed;
 
-            while (true)//Globals.gamedata.running)
+            Console.WriteLine("RunScript()");
+            while (this.gamedata.running)//Globals.gamedata.running)
             {
                 all_sleeping = true;
 
@@ -1133,7 +867,7 @@ namespace L2Robot
 #if !TESTING
                     try
                     {
-#endif
+#endif    
                         foreach (ScriptThread cthread in Threads.Values)
                         {
                             CurrentThread = cthread.ID;
@@ -1145,6 +879,7 @@ namespace L2Robot
                             while (IsRunning() && (cthread.Sleep_Until < DateTime.Now) && !time_passed)
                             {
                                 line = Get_Line(Line_Pos);
+                                Console.WriteLine(line);
 
                                 if (Proccess_Line(line, true))
                                 {
@@ -1249,7 +984,7 @@ namespace L2Robot
                     }
                 }//end of if
 
-                switch (Globals.gamedata.CurrentScriptState)
+                switch (this.gamedata.CurrentScriptState)
                 {
                     case ScriptState.Stopped:
                     case ScriptState.Running:
@@ -1259,7 +994,7 @@ namespace L2Robot
                         break;
                     case ScriptState.DelayStart:
                         Thread.Sleep(Globals.SLEEP_Script_Reset);
-                        Globals.gamedata.CurrentScriptState = ScriptState.Running;
+                        this.gamedata.CurrentScriptState = ScriptState.Running;
                         break;
                     default:
                         return;
@@ -1301,7 +1036,7 @@ namespace L2Robot
                 StreamReader filein = new StreamReader(evn_call.File);
                 ScriptFile sf = new ScriptFile();
                 sf.Name = evn_call.File;
-                sf.ReadScript(filein);
+                sf.ReadScript(this.gamedata.scriptthread, filein);
                 filein.Close();
 
                 Files.Add(sf.Name, sf);
@@ -1311,7 +1046,7 @@ namespace L2Robot
             if (dest_line == -1)
             {
                 Script_Error("EVENT CALLER: FUNCTION DOES NOT EXIST : " + evn_call.File + " : " + evn_call.Function);
-                Globals.gamedata.CurrentScriptState = ScriptState.Error;
+                this.gamedata.CurrentScriptState = ScriptState.Error;
                 return;
             }
 
@@ -1331,7 +1066,7 @@ namespace L2Robot
             Threads.Add(scr_thread.ID, scr_thread);
         }
 
-        private static ScriptVariable Get_Var(string pname)
+        private ScriptVariable Get_Var(string pname)
         {
             int cp = pname.IndexOf('.', 0);
             int sp = pname.IndexOf('#', 0);
@@ -1569,7 +1304,7 @@ namespace L2Robot
                             case "GET_DEC":
                                 ovar.Type = Var_Types.INT;
                                 string outg = int.Parse(svar.Value.ToString(), System.Globalization.NumberStyles.HexNumber).ToString();
-                                //Globals.l2net_home.Add_Debug(outg, Globals.Green);
+                                //Globals.l2net_home.Add_Text(outg, Globals.Green);
                                 ovar.Value = outg;
                                 break;
                             case "GET_HEX":
@@ -2559,7 +2294,7 @@ namespace L2Robot
             }
         }
 
-        public static void Script_Error(string text)
+        public void Script_Error(string text)
         {
             int current_line;
 
@@ -2575,7 +2310,63 @@ namespace L2Robot
             //Globals.l2net_home.Add_Error("SCRIPT ERROR : THREAD[" + CurrentThread.ToString() + "] LINE[" + current_line.ToString() + "] : " + text);
         }
 
-        private static ScriptVariable Get_Var_Internal(string pname, int h)
+        private string Get_String_Internal(string cmd)
+        {
+            //since sometimes we want the variable value and not the name...
+            //we want to find and replace all variables in our string
+            int var_start;
+            int var_end = cmd.Length + 2;
+            while ((var_start = cmd.IndexOf("<&", 0)) != -1)
+            {
+                //got the start, lets grab the end
+                int vcount = 0;
+                for (int ic = var_start + 2; ic < cmd.Length - 1; ic++)
+                {
+                    if (cmd[ic] == '<' && cmd[ic + 1] == '&')
+                    {
+                        vcount++;
+                    }
+                    if (cmd[ic] == '&' && cmd[ic + 1] == '>')
+                    {
+                        if (vcount == 0)
+                        {
+                            var_end = ic;
+                            break;
+                        }
+                        else
+                        {
+                            vcount--;
+                        }
+                    }
+                }
+
+                string name = cmd.Substring(var_start + 2, var_end - var_start - 2);
+
+                string nname = Get_String_Internal(name);
+                ScriptVariable scr_var = Get_Var(nname);
+
+                string value = "";
+
+                switch (scr_var.Type)
+                {
+                    case Var_Types.INT:
+                        value = Convert.ToInt64(scr_var.Value).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                        break;
+                    case Var_Types.DOUBLE:
+                        value = Convert.ToDouble(scr_var.Value).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                        break;
+                    case Var_Types.STRING:
+                        value = Convert.ToString(scr_var.Value);
+                        break;
+                }
+
+                cmd = cmd.Replace("<&" + name + "&>", value);
+            }
+
+            return cmd;
+        }
+
+        private ScriptVariable Get_Var_Internal(string pname, int h)
         {
             string name = pname.ToUpperInvariant().Trim();
 
@@ -2595,7 +2386,7 @@ namespace L2Robot
             return Get_Value(pname);
         }
 
-        public static string Get_String(ref string inp, bool evaluate = true)
+        public string Get_String(ref string inp, bool evaluate = true)
         {
             //lets remove all the blank spaces at the start of the line
             inp = inp.Trim();
@@ -2670,6 +2461,22 @@ namespace L2Robot
 
             return cmd;
         }
+        private bool VariableExists(string name)
+        {
+            if (((VariableList)Stack[StackHeight]).ContainsKey(name))
+            {
+                //variable of this name already exists
+                return true;
+            }
+
+            if (GlobalVariables.ContainsKey(name))
+            {
+                //variable of this name already exists
+                return true;
+            }
+
+            return false;
+        }
 
         public static string Get_StringToken(ref string inp)
         {
@@ -2732,80 +2539,6 @@ namespace L2Robot
 
             return cmd;
         }
-
-        private static string Get_String_Internal(string cmd)
-        {
-            //since sometimes we want the variable value and not the name...
-            //we want to find and replace all variables in our string
-            int var_start;
-            int var_end = cmd.Length + 2;
-            while ((var_start = cmd.IndexOf("<&", 0)) != -1)
-            {
-                //got the start, lets grab the end
-                int vcount = 0;
-                for (int ic = var_start + 2; ic < cmd.Length - 1; ic++)
-                {
-                    if (cmd[ic] == '<' && cmd[ic + 1] == '&')
-                    {
-                        vcount++;
-                    }
-                    if (cmd[ic] == '&' && cmd[ic + 1] == '>')
-                    {
-                        if (vcount == 0)
-                        {
-                            var_end = ic;
-                            break;
-                        }
-                        else
-                        {
-                            vcount--;
-                        }
-                    }
-                }
-
-                string name = cmd.Substring(var_start + 2, var_end - var_start - 2);
-
-                string nname = Get_String_Internal(name);
-                ScriptVariable scr_var = Get_Var(nname);
-
-                string value = "";
-
-                switch (scr_var.Type)
-                {
-                    case Var_Types.INT:
-                        value = Convert.ToInt64(scr_var.Value).ToString(System.Globalization.CultureInfo.InvariantCulture);
-                        break;
-                    case Var_Types.DOUBLE:
-                        value = Convert.ToDouble(scr_var.Value).ToString(System.Globalization.CultureInfo.InvariantCulture);
-                        break;
-                    case Var_Types.STRING:
-                        value = Convert.ToString(scr_var.Value);
-                        break;
-                }
-
-                cmd = cmd.Replace("<&" + name + "&>", value);
-            }
-
-            return cmd;
-        }
-
-        private bool VariableExists(string name)
-        {
-            if (((VariableList)Stack[StackHeight]).ContainsKey(name))
-            {
-                //variable of this name already exists
-                return true;
-            }
-
-            if (GlobalVariables.ContainsKey(name))
-            {
-                //variable of this name already exists
-                return true;
-            }
-
-            return false;
-        }
-
         private ScriptLine Get_Line(int cnt)
         {
             try
@@ -2837,5 +2570,6 @@ namespace L2Robot
                 return sl;
             }
         }
+
     }//end of class
 }//end of namespace

@@ -8,7 +8,7 @@ namespace L2Robot
     /// </summary>
     public class Player_Info : Object_Base
     {
-                private string _Name = "";
+        private string _Name = "";
         private string _Title = "";
         public volatile uint Sex = 0;
         public volatile uint Race = 0;

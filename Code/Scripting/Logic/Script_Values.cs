@@ -187,6 +187,8 @@ namespace L2Robot
         USE_SKILL_SMART = 162,
         CANCEL_BUFF = 163,
         GET_SKILLS = 164,
+        TELEPORT = 165,
+
 
         REBOOT = 1000,
         TWITCH_MOUSE = 1001,
@@ -208,62 +210,67 @@ namespace L2Robot
 
     public partial class ScriptEngine
     {
-        public static VariableList GlobalVariables = new VariableList();//_globals
-        public static SortedList Files = new SortedList();//_files
-        public static SortedList Threads = new SortedList();//_threads
-        public static SortedList Locks = new SortedList();//_locks
-        public static SortedList Classes = new SortedList();//_classes
-        private static SortedList _blocked_serverpackets = new SortedList();
-        private static SortedList _blocked_serverpacketsEX = new SortedList();
-        private static SortedList _blocked_clientpackets = new SortedList();
-        private static SortedList _blocked_clientpacketsEX = new SortedList();
-        private static SortedList _blocked_Selfpackets = new SortedList();
-        private static SortedList _blocked_SelfpacketsEX = new SortedList();
+        //public VariableList GlobalVariables = new VariableList();//_globals
+        //public SortedList Files = new SortedList();//_files
+        //public SortedList Threads = new SortedList();//_threads
+        //public SortedList Locks = new SortedList();//_locks
+        //public SortedList Classes = new SortedList();//_classes
+        private VariableList _globals = new VariableList();
+        private SortedList _files = new SortedList();
+        private SortedList _threads = new SortedList();
+        private SortedList _locks = new SortedList();
+        private SortedList _classes = new SortedList();
+        private SortedList _blocked_serverpackets = new SortedList();
+        private SortedList _blocked_serverpacketsEX = new SortedList();
+        private SortedList _blocked_clientpackets = new SortedList();
+        private SortedList _blocked_clientpacketsEX = new SortedList();
+        private SortedList _blocked_Selfpackets = new SortedList();
+        private SortedList _blocked_SelfpacketsEX = new SortedList();
 
-        private static readonly object _blocked_clientpacketsEXLock = new object();
-        private static readonly object _blocked_clientpacketsLock = new object();
-        private static readonly object _blocked_serverpacketsEXLock = new object();
-        private static readonly object _blocked_serverpacketsLock = new object();
-        private static readonly object _blocked_SelfpacketsEXLock = new object();
-        private static readonly object _blocked_SelfpacketsLock = new object();
-        /*private static readonly object _classesLock = new object();
-        private static readonly object _locksLock = new object();
-        private static readonly object _filesLock = new object();
-        private static readonly object _threadsLock = new object();
-        private static readonly object _globalsLock = new object();*/
+        private readonly object _blocked_clientpacketsEXLock = new object();
+        private readonly object _blocked_clientpacketsLock = new object();
+        private readonly object _blocked_serverpacketsEXLock = new object();
+        private readonly object _blocked_serverpacketsLock = new object();
+        private readonly object _blocked_SelfpacketsEXLock = new object();
+        private readonly object _blocked_SelfpacketsLock = new object();
+        private readonly object _classesLock = new object();
+        private readonly object _locksLock = new object();
+        private readonly object _filesLock = new object();
+        private readonly object _threadsLock = new object();
+        private readonly object _globalsLock = new object();
 
-        private static SortedList _events = new SortedList();
-        private static SortedList _events_serverpackets = new SortedList();
-        private static SortedList _events_serverpacketsEX = new SortedList();
-        private static SortedList _events_clientpackets = new SortedList();
-        private static SortedList _events_clientpacketsEX = new SortedList();
-        private static SortedList _events_selfpackets = new SortedList();
-        private static SortedList _events_selfpacketsEX = new SortedList();
-        private static Queue _eventqueue = new Queue();
-        private static readonly object events_clientpacketsLock = new object();
-        private static readonly object events_clientpacketsEXLock = new object();
-        private static readonly object events_serverpacketsLock = new object();
-        private static readonly object events_serverpacketsEXLock = new object();
-        private static readonly object events_selfpacketsLock = new object();
-        private static readonly object events_selfpacketsEXLock = new object();
-        private static readonly object eventsLock = new object();
-        private static readonly object eventqueueLock = new object();
+        private SortedList _events = new SortedList();
+        private SortedList _events_serverpackets = new SortedList();
+        private SortedList _events_serverpacketsEX = new SortedList();
+        private SortedList _events_clientpackets = new SortedList();
+        private SortedList _events_clientpacketsEX = new SortedList();
+        private SortedList _events_selfpackets = new SortedList();
+        private SortedList _events_selfpacketsEX = new SortedList();
+        private Queue _eventqueue = new Queue();
+        private readonly object events_clientpacketsLock = new object();
+        private readonly object events_clientpacketsEXLock = new object();
+        private readonly object events_serverpacketsLock = new object();
+        private readonly object events_serverpacketsEXLock = new object();
+        private readonly object events_selfpacketsLock = new object();
+        private readonly object events_selfpacketsEXLock = new object();
+        private readonly object eventsLock = new object();
+        private readonly object eventqueueLock = new object();
 
-        private static int CurrentThread = 0;
-        private volatile static int _thread_id = 0;
-        private static bool BumpThread = false;
+        private int CurrentThread = 0;
+        private int _thread_id = 0;
+        private bool BumpThread = false;
 
-        public static bool is_Moving = false;
-        private static int Moving_X = 0;
-        private static int Moving_Y = 0;
-        private static int Moving_Z = 0;
-        private static ArrayList Moving_List = new ArrayList();
+        public bool is_Moving = false;
+        private int Moving_X = 0;
+        private int Moving_Y = 0;
+        private int Moving_Z = 0;
+        private ArrayList Moving_List = new ArrayList();
 
         //Used for MOVE_INTERRUPT command
-        public static bool _moveSmartInterruptFlag = false;
-        public static readonly object moveSmartInterruptFlagLock = new object();
+        public bool _moveSmartInterruptFlag = false;
+        public readonly object moveSmartInterruptFlagLock = new object();
 
-        /*public static VariableList GlobalVariables
+        public VariableList GlobalVariables
         {
             get
             {
@@ -281,9 +288,9 @@ namespace L2Robot
                     _globals = value;
                 }
             }
-        }*/
+        }
 
-        public static SortedList Blocked_ServerPacketsEX
+        public SortedList Blocked_ServerPacketsEX
         {
             get
             {
@@ -303,7 +310,7 @@ namespace L2Robot
             }
         }
 
-        public static SortedList Blocked_ServerPackets
+        public SortedList Blocked_ServerPackets
         {
             get
             {
@@ -323,7 +330,7 @@ namespace L2Robot
             }
         }
 
-        public static SortedList Blocked_ClientPacketsEX
+        public SortedList Blocked_ClientPacketsEX
         {
             get
             {
@@ -343,7 +350,7 @@ namespace L2Robot
             }
         }
 
-        public static SortedList Blocked_ClientPackets
+        public SortedList Blocked_ClientPackets
         {
             get
             {
@@ -363,7 +370,7 @@ namespace L2Robot
             }
         }
 
-        public static SortedList Blocked_SelfPackets
+        public SortedList Blocked_SelfPackets
         {
             get
             {
@@ -383,7 +390,7 @@ namespace L2Robot
             }
         }
 
-        public static SortedList Blocked_SelfPacketsEX
+        public SortedList Blocked_SelfPacketsEX
         {
             get
             {
@@ -403,7 +410,7 @@ namespace L2Robot
             }
         }
 
-        /*public static SortedList Classes
+        public SortedList Classes
         {
             get
             {
@@ -423,7 +430,7 @@ namespace L2Robot
             }
         }
 
-        public static SortedList Locks
+        public SortedList Locks
         {
             get
             {
@@ -443,7 +450,7 @@ namespace L2Robot
             }
         }
 
-        public static SortedList Files
+        public SortedList Files
         {
             get
             {
@@ -463,7 +470,7 @@ namespace L2Robot
             }
         }
 
-        public static SortedList Threads
+        public SortedList Threads
         {
             get
             {
@@ -481,16 +488,16 @@ namespace L2Robot
                     _threads = value;
                 }
             }
-        }*/
+        }
 
-        private static void ResetThreads()
+        private void ResetThreads()
         {
             CurrentThread = 0;
 
             _thread_id = _thread_id + 1;
         }
 
-        private static int GetUniqueThreadID()
+        private int GetUniqueThreadID()
         {
             _thread_id = _thread_id + 1;
             return _thread_id;
@@ -524,7 +531,7 @@ namespace L2Robot
             }
         }
 
-        public static ScriptEventCaller EventsGetCaller(int key)
+        public ScriptEventCaller EventsGetCaller(int key)
         {
             /*ScriptEventCaller sc_ev = null;
             lock (eventsLock)
@@ -535,7 +542,7 @@ namespace L2Robot
             return (ScriptEventCaller)_events[key];
         }
 
-        public static ScriptEventCaller ServerPacketsGetCaller(int key)
+        public ScriptEventCaller ServerPacketsGetCaller(int key)
         {
             /*ScriptEventCaller sc_ev = null;
             lock (events_serverpacketsLock)
@@ -546,7 +553,7 @@ namespace L2Robot
             return (ScriptEventCaller)_events_serverpackets[key];
         }
 
-        public static ScriptEventCaller ServerPacketsEXGetCaller(int key)
+        public ScriptEventCaller ServerPacketsEXGetCaller(int key)
         {
             /*ScriptEventCaller sc_ev = null;
             lock (events_serverpacketsEXLock)
@@ -557,7 +564,7 @@ namespace L2Robot
             return (ScriptEventCaller)_events_serverpacketsEX[key];
         }
 
-        public static ScriptEventCaller ClientPacketsGetCaller(int key)
+        public ScriptEventCaller ClientPacketsGetCaller(int key)
         {
             /*ScriptEventCaller sc_ev = null;
             lock (events_clientpacketsLock)
@@ -568,7 +575,7 @@ namespace L2Robot
             return (ScriptEventCaller)_events_clientpackets[key];
         }
 
-        public static ScriptEventCaller ClientPacketsEXGetCaller(int key)
+        public ScriptEventCaller ClientPacketsEXGetCaller(int key)
         {
             /*ScriptEventCaller sc_ev = null;
             lock (events_clientpacketsEXLock)
@@ -579,7 +586,7 @@ namespace L2Robot
             return (ScriptEventCaller)_events_clientpacketsEX[key];
         }
 
-        public static ScriptEventCaller SelfPacketsGetCaller(int key)
+        public ScriptEventCaller SelfPacketsGetCaller(int key)
         {
             /*ScriptEventCaller sc_ev = null;
             lock (events_selfpacketsLock)
@@ -590,7 +597,7 @@ namespace L2Robot
             return (ScriptEventCaller)_events_selfpackets[key];
         }
 
-        public static ScriptEventCaller SelfPacketsEXGetCaller(int key)
+        public ScriptEventCaller SelfPacketsEXGetCaller(int key)
         {
             /*ScriptEventCaller sc_ev = null;
             lock (events_selfpacketsEXLock)
@@ -601,7 +608,7 @@ namespace L2Robot
             return (ScriptEventCaller)_events_selfpacketsEX[key];
         }
 
-        public static bool EventsContainsKey(int key)
+        public bool EventsContainsKey(int key)
         {
             /*bool contains = false;
             lock (eventsLock)
@@ -612,7 +619,7 @@ namespace L2Robot
             return _events.ContainsKey(key);
         }
 
-        public static bool ServerPacketsContainsKey(int key)
+        public bool ServerPacketsContainsKey(int key)
         {
             bool contains = false;
             lock (events_serverpacketsLock)
@@ -622,7 +629,7 @@ namespace L2Robot
             return contains;
         }
 
-        public static bool ServerPacketsEXContainsKey(int key)
+        public bool ServerPacketsEXContainsKey(int key)
         {
             bool contains = false;
             lock (events_serverpacketsEXLock)
@@ -632,7 +639,7 @@ namespace L2Robot
             return contains;
         }
 
-        public static bool ClientPacketsContainsKey(int key)
+        public bool ClientPacketsContainsKey(int key)
         {
             bool contains = false;
             lock (events_serverpacketsLock)
@@ -642,7 +649,7 @@ namespace L2Robot
             return contains;
         }
 
-        public static bool ClientPacketsEXContainsKey(int key)
+        public bool ClientPacketsEXContainsKey(int key)
         {
             bool contains = false;
             lock (events_serverpacketsEXLock)
@@ -651,7 +658,7 @@ namespace L2Robot
             }
             return contains;
         }
-        public static bool SelfPacketsContainsKey(int key)
+        public bool SelfPacketsContainsKey(int key)
         {
             bool contains = false;
             lock (events_serverpacketsLock)
@@ -661,7 +668,7 @@ namespace L2Robot
             return contains;
         }
 
-        public static bool SelfPacketsEXContainsKey(int key)
+        public bool SelfPacketsEXContainsKey(int key)
         {
             bool contains = false;
             lock (events_serverpacketsEXLock)
@@ -671,7 +678,7 @@ namespace L2Robot
             return contains;
         }
 
-        public static void EventsRemoveKey(int key)
+        public void EventsRemoveKey(int key)
         {
             lock (eventsLock)
             {
@@ -679,7 +686,7 @@ namespace L2Robot
             }
         }
 
-        public static void ServerPacketsRemoveKey(int key)
+        public void ServerPacketsRemoveKey(int key)
         {
             lock (events_serverpacketsLock)
             {
@@ -687,7 +694,7 @@ namespace L2Robot
             }
         }
 
-        public static void ServerPacketsEXRemoveKey(int key)
+        public void ServerPacketsEXRemoveKey(int key)
         {
             lock (events_serverpacketsEXLock)
             {
@@ -695,7 +702,7 @@ namespace L2Robot
             }
         }
 
-        public static void ClientPacketsRemoveKey(int key)
+        public void ClientPacketsRemoveKey(int key)
         {
             lock (events_clientpacketsLock)
             {
@@ -703,14 +710,14 @@ namespace L2Robot
             }
         }
 
-        public static void ClientPacketsEXRemoveKey(int key)
+        public void ClientPacketsEXRemoveKey(int key)
         {
             lock (events_clientpacketsEXLock)
             {
                 _events_clientpacketsEX.Remove(key);
             }
         }
-        public static void SelfPacketsRemoveKey(int key)
+        public void SelfPacketsRemoveKey(int key)
         {
             lock (events_selfpacketsLock)
             {
@@ -718,7 +725,7 @@ namespace L2Robot
             }
         }
 
-        public static void SelfPacketsEXRemoveKey(int key)
+        public void SelfPacketsEXRemoveKey(int key)
         {
             lock (events_selfpacketsEXLock)
             {
@@ -726,7 +733,7 @@ namespace L2Robot
             }
         }
 
-        public static void EventsAddKey(int key, ScriptEventCaller sc_ec)
+        public void EventsAddKey(int key, ScriptEventCaller sc_ec)
         {
             lock (eventsLock)
             {
@@ -734,7 +741,7 @@ namespace L2Robot
             }
         }
 
-        public static void ServerPacketsAddKey(int key, ScriptEventCaller sc_ec)
+        public void ServerPacketsAddKey(int key, ScriptEventCaller sc_ec)
         {
             lock (events_serverpacketsLock)
             {
@@ -742,7 +749,7 @@ namespace L2Robot
             }
         }
 
-        public static void ServerPacketsEXAddKey(int key, ScriptEventCaller sc_ec)
+        public void ServerPacketsEXAddKey(int key, ScriptEventCaller sc_ec)
         {
             lock (events_serverpacketsEXLock)
             {
@@ -750,7 +757,7 @@ namespace L2Robot
             }
         }
 
-        public static void ClientPacketsAddKey(int key, ScriptEventCaller sc_ec)
+        public void ClientPacketsAddKey(int key, ScriptEventCaller sc_ec)
         {
             lock (events_clientpacketsLock)
             {
@@ -758,7 +765,7 @@ namespace L2Robot
             }
         }
 
-        public static void ClientPacketsEXAddKey(int key, ScriptEventCaller sc_ec)
+        public void ClientPacketsEXAddKey(int key, ScriptEventCaller sc_ec)
         {
             lock (events_clientpacketsEXLock)
             {
@@ -766,7 +773,7 @@ namespace L2Robot
             }
         }
 
-        public static void SelfPacketsAddKey(int key, ScriptEventCaller sc_ec)
+        public void SelfPacketsAddKey(int key, ScriptEventCaller sc_ec)
         {
             lock (events_selfpacketsLock)
             {
@@ -774,7 +781,7 @@ namespace L2Robot
             }
         }
 
-        public static void SelfPacketsEXAddKey(int key, ScriptEventCaller sc_ec)
+        public void SelfPacketsEXAddKey(int key, ScriptEventCaller sc_ec)
         {
             lock (events_selfpacketsEXLock)
             {
@@ -782,7 +789,7 @@ namespace L2Robot
             }
         }
 
-        public static int EventQueueCount()
+        public int EventQueueCount()
         {
             int tmp;
             lock (eventqueueLock)
@@ -792,7 +799,7 @@ namespace L2Robot
             return tmp;
         }
 
-        public static void SendToEventQueue(ScriptEvent sc_ev)
+        public void SendToEventQueue(ScriptEvent sc_ev)
         {
             lock (eventqueueLock)
             {
@@ -800,7 +807,7 @@ namespace L2Robot
             }
         }
 
-        public static ScriptEvent EventQueueDequeue()
+        public ScriptEvent EventQueueDequeue()
         {
             ScriptEvent sc_ev = null;
             lock (eventqueueLock)
@@ -810,7 +817,7 @@ namespace L2Robot
             return sc_ev;
         }
 
-        public static SortedList Sublist
+        public SortedList Sublist
         {
             get
             {
@@ -822,7 +829,7 @@ namespace L2Robot
             }
         }
 
-        public static SortedList Functionlist
+        public SortedList Functionlist
         {
             get
             {
@@ -834,7 +841,7 @@ namespace L2Robot
             }
         }
 
-        public static SortedList Labellist
+        public SortedList Labellist
         {
             get
             {
@@ -846,7 +853,7 @@ namespace L2Robot
             }
         }
 
-        public static ArrayList Stack
+        public ArrayList Stack
         {
             get
             {
@@ -858,7 +865,7 @@ namespace L2Robot
             }
         }
 
-        public static Stack Subcalls
+        public Stack Subcalls
         {
             get
             {
@@ -870,7 +877,7 @@ namespace L2Robot
             }
         }
 
-        public static Stack Functioncalls
+        public Stack Functioncalls
         {
             get
             {
@@ -882,7 +889,7 @@ namespace L2Robot
             }
         }
 
-        public static int StackHeight
+        public int StackHeight
         {
             get
             {
@@ -894,7 +901,7 @@ namespace L2Robot
             }
         }
 
-        public static int Line_Pos
+        public int Line_Pos
         {
             get
             {
@@ -906,7 +913,7 @@ namespace L2Robot
             }
         }
 
-        public static bool moveSmartInterruptFlag
+        public bool moveSmartInterruptFlag
         {
             get
             {

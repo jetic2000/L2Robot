@@ -59,7 +59,7 @@ namespace L2Robot
                     {
                         case Var_Types.THREAD:
                             //stop the thread before we delete the variable
-                            ((ScriptThread)((ScriptVariable)((VariableList)Stack[StackHeight])[param1]).Value).Kill();
+                            ((ScriptThread)((ScriptVariable)((VariableList)Stack[StackHeight])[param1]).Value).Kill(this.gamedata);
                             break;
                     }
 
@@ -204,7 +204,7 @@ namespace L2Robot
                 {
                     case ScriptCommands.END_OF_FILE:
                         Script_Error("UNEXPECTED END_OF_FILE");
-                        Globals.gamedata.CurrentScriptState = ScriptState.EOF;
+                        this.gamedata.CurrentScriptState = ScriptState.EOF;
                         return;
                     case ScriptCommands.SWITCH:
                         tmp_ifcount++;
@@ -407,7 +407,7 @@ namespace L2Robot
             Threads.Add(scr_thread.ID, scr_thread);
         }
 
-        private static ScriptThread CreateThread(string fname)
+        private ScriptThread CreateThread(string fname)
         {
             int lin = Get_Function_Line(fname, ((ScriptThread)Threads[CurrentThread]).Current_File);
 
@@ -479,7 +479,7 @@ namespace L2Robot
                 {
                     case ScriptCommands.END_OF_FILE:
                         Script_Error("UNEXPECTED END_OF_FILE");
-                        Globals.gamedata.CurrentScriptState = ScriptState.EOF;
+                        this.gamedata.CurrentScriptState = ScriptState.EOF;
                         return;
                     case ScriptCommands.FUNCTION:
                     case ScriptCommands.SUB:
@@ -544,6 +544,7 @@ namespace L2Robot
             if (!is_debug || (is_debug && Globals.Script_Debugging))
             {
                 string param1 = Get_String(ref line);
+                Console.WriteLine("Script_PRINT_TEXT() - {0}", param1);
                 //Globals.l2net_home.Add_Text(param1, Globals.Red, TextType.BOT);
             }
         }
@@ -555,7 +556,7 @@ namespace L2Robot
             if (tmp_int1 == -1)
             {
                 Script_Error("LABEL DOES NOT EXIST");
-                Globals.gamedata.CurrentScriptState = ScriptState.Error;
+                this.gamedata.CurrentScriptState = ScriptState.Error;
             }
             else
             {
@@ -577,7 +578,7 @@ namespace L2Robot
             if (tmp_int1 < 0)
             {
                 Script_Error("LINE VALUE IS INVALID");
-                Globals.gamedata.CurrentScriptState = ScriptState.Error;
+                this.gamedata.CurrentScriptState = ScriptState.Error;
             }
             else
             {
@@ -622,7 +623,7 @@ namespace L2Robot
             if (dest_line == -1)
             {
                 Script_Error("SUB DOES NOT EXIST");
-                Globals.gamedata.CurrentScriptState = ScriptState.Error;
+                this.gamedata.CurrentScriptState = ScriptState.Error;
                 return;
             }
 
@@ -674,12 +675,12 @@ namespace L2Robot
                     StreamReader filein = new StreamReader(s_file);
                     ScriptFile sf = new ScriptFile();
                     sf.Name = s_file;
-                    sf.ReadScript(filein);
+                    sf.ReadScript(this.gamedata.scriptthread, filein);
                     filein.Close();
 
                     Files.Add(sf.Name, sf);
 
-                    sc.ReadFile(sf);
+                    sc.ReadFile(this.gamedata.scriptthread, sf);
 
                     if (!Classes.ContainsKey(sc.Name))
                     {
@@ -689,7 +690,7 @@ namespace L2Robot
                     {
                         //we already have a class of this name... from a different file
                         Script_Error("FAILED TO INCLUDE FILE : " + s_file + " : A class of this name [" + sc.Name + "] from a different file has already been loaded");
-                        Globals.gamedata.CurrentScriptState = ScriptState.Error;
+                        this.gamedata.CurrentScriptState = ScriptState.Error;
                     }
                 }
                 /*else
@@ -702,7 +703,7 @@ namespace L2Robot
             catch
             {
                 Script_Error("FAILED TO INCLUDE FILE : " + s_file);
-                Globals.gamedata.CurrentScriptState = ScriptState.Error;
+                this.gamedata.CurrentScriptState = ScriptState.Error;
             }
         }
 
@@ -724,7 +725,7 @@ namespace L2Robot
                 StreamReader filein = new StreamReader(s_file);
                 ScriptFile sf = new ScriptFile();
                 sf.Name = s_file;
-                sf.ReadScript(filein);
+                sf.ReadScript(this.gamedata.scriptthread, filein);
                 filein.Close();
 
                 Files.Add(sf.Name, sf);
@@ -828,7 +829,7 @@ namespace L2Robot
                     catch (Exception e)
                     {
                         Script_Error("Error parsing class function : " + cname + "." + fname + " :: " + e.Message);
-                        Globals.gamedata.CurrentScriptState = ScriptState.Error;
+                        this.gamedata.CurrentScriptState = ScriptState.Error;
                     }
                     return;
                 }
@@ -858,7 +859,7 @@ namespace L2Robot
                 else
                 {
                     Script_Error("FUNCTION DOES NOT EXIST : " + s_name);
-                    Globals.gamedata.CurrentScriptState = ScriptState.Error;
+                    this.gamedata.CurrentScriptState = ScriptState.Error;
                     return;
                 }
             }
@@ -1125,9 +1126,9 @@ namespace L2Robot
                 {
                     if (!((Script_ClassData)new_var.Value).Initialized)
                     {
-                        if (((Script_Class)Classes[((Script_ClassData)new_var.Value).Name]).Has_Function("CONSTRUCT"))
+                        if (((Script_Class)Classes[((Script_ClassData)new_var.Value).Name]).Has_Function(this.gamedata.scriptthread, "CONSTRUCT"))
                         {
-                            Globals.scriptthread.Function_Call(((Script_Class)Classes[((Script_ClassData)new_var.Value).Name]).File, "CONSTRUCT", new_var.Name, param3, true, new_var);
+                            this.gamedata.scriptthread.Function_Call(((Script_Class)Classes[((Script_ClassData)new_var.Value).Name]).File, "CONSTRUCT", new_var.Name, param3, true, new_var);
                             ((Script_ClassData)new_var.Value).Initialized = true;
                             do_advance = false;
                         }
@@ -1152,7 +1153,7 @@ namespace L2Robot
 
         }
 
-        public static ScriptVariable Create_Variable(string type, string name, string value, Var_State v)
+        public ScriptVariable Create_Variable(string type, string name, string value, Var_State v)
         {
             type = type.ToUpperInvariant();
             name = name.ToUpperInvariant();
@@ -1278,7 +1279,7 @@ namespace L2Robot
                         //Script_Class sc = (Script_Class)ScriptEngine.Classes[type];
                         new_var.Type = Var_Types.CLASS;
                         new_var.Value = new Script_ClassData();
-                        ((Script_ClassData)new_var.Value).Init(type);
+                        ((Script_ClassData)new_var.Value).Init(this.gamedata.scriptthread, type);
                     }
                     else
                     {
@@ -1381,7 +1382,7 @@ namespace L2Robot
                         {
                             case ScriptCommands.END_OF_FILE:
                                 Script_Error("UNEXPECTED END_OF_FILE");
-                                Globals.gamedata.CurrentScriptState = ScriptState.EOF;
+                                this.gamedata.CurrentScriptState = ScriptState.EOF;
                                 return;
                             case ScriptCommands.WHILE:
                                 tmp__whilecount++;
@@ -1426,7 +1427,7 @@ namespace L2Robot
                     {
                         case ScriptCommands.END_OF_FILE:
                             Script_Error("UNEXPECTED END_OF_FILE");
-                            Globals.gamedata.CurrentScriptState = ScriptState.EOF;
+                            this.gamedata.CurrentScriptState = ScriptState.EOF;
                             return;
                         case ScriptCommands.WEND:
                             tmp__whilecount--;
@@ -1474,7 +1475,7 @@ namespace L2Robot
                         {
                             case ScriptCommands.END_OF_FILE:
                                 Script_Error("UNEXPECTED END_OF_FILE");
-                                Globals.gamedata.CurrentScriptState = ScriptState.EOF;
+                                this.gamedata.CurrentScriptState = ScriptState.EOF;
                                 return;
                             case ScriptCommands.LOOP:
                                 tmp__doloopcount--;
@@ -1675,7 +1676,7 @@ namespace L2Robot
                         {
                             case ScriptCommands.END_OF_FILE:
                                 Script_Error("UNEXPECTED END_OF_FILE");
-                                Globals.gamedata.CurrentScriptState = ScriptState.EOF;
+                                this.gamedata.CurrentScriptState = ScriptState.EOF;
                                 return;
                             case ScriptCommands.FOREACH:
                                 tmp_forcount++;
@@ -1721,7 +1722,7 @@ namespace L2Robot
                     {
                         case ScriptCommands.END_OF_FILE:
                             Script_Error("UNEXPECTED END_OF_FILE");
-                            Globals.gamedata.CurrentScriptState = ScriptState.EOF;
+                            this.gamedata.CurrentScriptState = ScriptState.EOF;
                             return;
                         case ScriptCommands.FOREACH:
                             if (tmp_forcount == 0)
@@ -1969,7 +1970,7 @@ namespace L2Robot
                         {
                             case ScriptCommands.END_OF_FILE:
                                 Script_Error("UNEXPECTED END_OF_FILE");
-                                Globals.gamedata.CurrentScriptState = ScriptState.EOF;
+                                this.gamedata.CurrentScriptState = ScriptState.EOF;
                                 return;
                             case ScriptCommands.FOR:
                                 tmp_forcount++;
@@ -2015,7 +2016,7 @@ namespace L2Robot
                     {
                         case ScriptCommands.END_OF_FILE:
                             Script_Error("UNEXPECTED END_OF_FILE");
-                            Globals.gamedata.CurrentScriptState = ScriptState.EOF;
+                            this.gamedata.CurrentScriptState = ScriptState.EOF;
                             return;
                         case ScriptCommands.FOR:
                             if (tmp_forcount == 0)
@@ -2139,7 +2140,7 @@ namespace L2Robot
                         {
                             case ScriptCommands.END_OF_FILE:
                                 Script_Error("UNEXPECTED END_OF_FILE");
-                                Globals.gamedata.CurrentScriptState = ScriptState.EOF;
+                                this.gamedata.CurrentScriptState = ScriptState.EOF;
                                 return;
                             case ScriptCommands.IF:
                                 tmp_ifcount++;
@@ -2191,7 +2192,7 @@ namespace L2Robot
                     {
                         case ScriptCommands.END_OF_FILE:
                             Script_Error("UNEXPECTED END_OF_FILE");
-                            Globals.gamedata.CurrentScriptState = ScriptState.EOF;
+                            this.gamedata.CurrentScriptState = ScriptState.EOF;
                             return;
                         case ScriptCommands.IF:
                             tmp_ifcount++;
@@ -2254,7 +2255,7 @@ namespace L2Robot
             return -1;
         }
 
-        private static int Get_Function_Line(string label_name, string file)
+        private int Get_Function_Line(string label_name, string file)
         {
             label_name = label_name.ToUpperInvariant();
 
@@ -2428,7 +2429,7 @@ namespace L2Robot
         }
 
 
-        private static void Add_Function(string name, int line, string file, Var_State state)
+        private void Add_Function(string name, int line, string file, Var_State state)
         {
             ScriptLabel scr_lab = new ScriptLabel();
 

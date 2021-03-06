@@ -502,7 +502,7 @@ namespace L2Robot
         MyBirthday = 0x7E
     }
 
-    enum PClientEX : byte
+    enum PClientEX : uint
     {
         RequestManorList = 0x01,
         RequestProcureCropList = 0x02,
@@ -593,7 +593,10 @@ namespace L2Robot
 
         RequestAutoSoulShot = 0x0D, //HI5
         RequestCrystallizeEstimate = 0x91,
-        RequestCrystallizeCancel = 0x92
+        RequestCrystallizeCancel = 0x92,
+
+        //Add By Jack
+        RequestTeleport = 0x167,
 
     }
 
