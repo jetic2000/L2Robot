@@ -665,6 +665,7 @@ namespace L2Robot
             s_file = Globals.PATH + "\\Scripts\\" + s_file;
 
             s_file = s_file.ToUpperInvariant().Replace('/', '\\');
+            Console.WriteLine("Include File : {0}", s_file);
 
             try
             {

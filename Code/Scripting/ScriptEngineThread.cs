@@ -98,7 +98,7 @@ namespace L2Robot
 			try
 			{
 #endif
-            Console.WriteLine("Proccess_Line(), cmd: {0}", my_command);
+            //Console.WriteLine("Proccess_Line(), cmd: {0}", my_command);
             switch (my_command)
             {
                 case ScriptCommands.SET:
@@ -364,6 +364,22 @@ namespace L2Robot
                     Script_GET_ZONE(line);
                     do_advance = true;
                     break;
+                case ScriptCommands.INJECT:
+                    Script_INJECT(line);
+                    do_advance = true;
+                    break;
+                case ScriptCommands.GET_NPCS:
+                    //Script_GET_NPCS(line);
+                    do_advance = true;
+                    break;
+                case ScriptCommands.GET_PLAYERS:
+                    Script_GET_PLAYERS(line);
+                    do_advance = true;
+                    break;
+                case ScriptCommands.GET_MYSELF:
+                    Script_GET_MYSELF(line);
+                    do_advance = true;
+                    break;
                 case ScriptCommands.GENERATE_POLY:
                     Script_GENERATE_POLY(line);
                     do_advance = true;
@@ -608,6 +624,8 @@ namespace L2Robot
                     return ScriptCommands.GET_ITEMS;
                 case "GET_PARTY":
                     return ScriptCommands.GET_PARTY;
+                case "GET_MYSELF":
+                    return ScriptCommands.GET_MYSELF;
                 case "GET_PLAYERS":
                     return ScriptCommands.GET_PLAYERS;
                 case "FORCE_LOG":
@@ -832,14 +850,25 @@ namespace L2Robot
             is_Moving = false;
             Moving_List.Clear();
 
-            StreamReader filein = new StreamReader(this.gamedata.Script_File);
-            ScriptFile sf = new ScriptFile();
-            sf.Name = this.gamedata.Script_File;
-            sf.ReadScript(this.gamedata.scriptthread, filein);
-            filein.Close();
+            Globals.ScriptFileLock.EnterReadLock();
+            try {
+                StreamReader filein = new StreamReader(this.gamedata.Script_File);
+                ScriptFile sf = new ScriptFile();
+                sf.Name = this.gamedata.Script_File;
+                sf.ReadScript(this.gamedata.scriptthread, filein);
+                filein.Close();
+                Files.Add(sf.Name, sf);
+            }
+            catch
+            {
 
-            Files.Add(sf.Name, sf);
+            }
+            finally
+            {
+                Globals.ScriptFileLock.ExitReadLock();
+            }
 
+            
             ScriptThread scr_thread = new ScriptThread();
             scr_thread.Current_File = this.gamedata.Script_File;
             scr_thread.Line_Pos = 0;
@@ -879,7 +908,7 @@ namespace L2Robot
                             while (IsRunning() && (cthread.Sleep_Until < DateTime.Now) && !time_passed)
                             {
                                 line = Get_Line(Line_Pos);
-                                Console.WriteLine(line);
+                                //Console.WriteLine(line);
 
                                 if (Proccess_Line(line, true))
                                 {
@@ -2306,7 +2335,7 @@ namespace L2Robot
             {
                 current_line = -1;
             }
-
+            Console.WriteLine("SCRIPT ERROR : THREAD[" + CurrentThread.ToString() + "] LINE[" + current_line.ToString() + "] : " + text);
             //Globals.l2net_home.Add_Error("SCRIPT ERROR : THREAD[" + CurrentThread.ToString() + "] LINE[" + current_line.ToString() + "] : " + text);
         }
 

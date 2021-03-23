@@ -1,5 +1,7 @@
 using System;
+using System.Text;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace L2Robot
 {
@@ -487,6 +489,322 @@ namespace L2Robot
             //Clear_Skills();
             //Clear_MyBuffs();
             //Clear_Party();
+        }
+
+        
+        public void Load_User(ByteBuffer buff)
+        {
+            int length = 0;
+            int loc = buff.GetIndex();
+            byte Mask1 = 0x0;
+            byte Mask2 = 0x0;
+            byte Mask3 = 0x0;
+            byte Mask4 = 0x0;
+            Int16 sub_length = 0;
+            UInt16 sub_cmd = 0x0;
+            int content_index = 0;
+
+            length = buff.ReadInt32(); //Total content length
+            //Console.WriteLine("UserInfo Load length: {0}",length);
+            loc += 4;
+            sub_cmd = buff.ReadUInt16();
+            loc += 2;
+            if (sub_cmd != 0x1c)
+            {
+                Console.WriteLine("Error for UserInfo");
+                return;
+            }
+            Mask1 = buff.ReadByte();
+            Mask2 = buff.ReadByte();
+            Mask3 = buff.ReadByte();
+            Mask4 = buff.ReadByte();
+            //Console.WriteLine("UserInfo Load mask: 0x{0:x}{1:x}{2:x}{3:x}", Mask1, Mask2, Mask3, Mask4);
+            loc += 4;
+
+            if ((Mask1 & 0x80) != 0)
+            {
+                buff.SetIndex(loc);
+                buff.ReadUInt32(); //Fix Length
+                loc += 4;
+            }
+
+            //Handle Player Name and Etc
+            if ((Mask1 & 0x40) != 0)
+            {
+                Globals.MyselfLock.EnterWriteLock();
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                int namesize = buff.ReadInt16();
+                List<byte> unicodeChars = new List<byte>();
+                for (int j = 0; j < namesize; j++)
+                {
+                    unicodeChars.Add(buff.ReadByte());
+                    unicodeChars.Add(buff.ReadByte());
+                }
+                byte[] PlayerName = unicodeChars.ToArray();
+                Name = Encoding.Unicode.GetString(PlayerName);
+                Console.WriteLine("User Name: {0}", Name);
+                Globals.MyselfLock.ExitWriteLock();
+
+                loc += sub_length;
+            }
+
+            if ((Mask1 & 0x20) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask1 & 0x10) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            
+            if ((Mask1 & 0x08) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask1 & 0x04) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask1 & 0x02) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask1 & 0x01) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask2 & 0x80) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask2 & 0x40) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            //Handle User Position
+            if ((Mask2 & 0x20) != 0)
+            {
+                Globals.MyselfLock.EnterWriteLock();
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                X = buff.ReadInt32();
+                Y = buff.ReadInt32();
+                Z = buff.ReadInt32();
+
+                Console.WriteLine("UserInfo：{0}[0x{1:x}] -> ({2},{3},{4})", Name, ID, X, Y, Z);
+                Globals.MyselfLock.ExitWriteLock();
+
+                loc += sub_length;
+            }
+
+            if ((Mask2 & 0x10) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask2 & 0x08) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            
+            if ((Mask2 & 0x04) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            
+            if ((Mask2 & 0x02) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            
+            if ((Mask2 & 0x01) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask3 & 0x80) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask3 & 0x40) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask3 & 0x20) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask3 & 0x10) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask3 & 0x08) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask3 & 0x04) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask3 & 0x02) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask3 & 0x01) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask4 & 0x80) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask4 & 0x40) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask4 & 0x20) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask4 & 0x10) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask4 & 0x08) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask4 & 0x04) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask4 & 0x02) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            if ((Mask4 & 0x01) != 0)
+            {
+                content_index += 1;
+                buff.SetIndex(loc);
+                sub_length = buff.ReadInt16();
+                loc += sub_length;
+            }
+
+            //Console.WriteLine("UserInfo Load content_index: {0}, loc: {1}", content_index, loc);    
+
         }
     }//end of class
 }

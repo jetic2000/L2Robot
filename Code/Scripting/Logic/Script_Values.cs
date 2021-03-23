@@ -206,6 +206,8 @@ namespace L2Robot
         ADD_KEY = 1013,
         ADD_DWORD = 1014,
         ADD_KEYBINARY = 1015,
+
+        GET_MYSELF = 2000,
     }
 
     public partial class ScriptEngine

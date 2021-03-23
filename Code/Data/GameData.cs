@@ -191,38 +191,38 @@ namespace L2Robot
     {
 
         //Client & Server
-        public bool InList = false;
-        public Socket Login_GameSocket;
+        public volatile bool InList = false;
+        //public Socket Login_GameSocket;
         //IG/OOG: bot conection to game server
-        public Socket Game_GameSocket;
+        private Socket _Game_GameSocket;
         //IG: client connection to bot login server
-        public TcpListener Login_ClientLink;
-        public Socket Login_ClientSocket;
+        //public TcpListener Login_ClientLink;
+        //public Socket Login_ClientSocket;
         //IG: client connection to bot game server
-        //public TcpListener Game_ClientLink;
-        public Socket Game_ClientSocket;
+        private TcpListener _Game_ClientLink;
+        private Socket _Game_ClientSocket;
 
-        public volatile static bool clientsocket_ready = false;
-        public volatile static bool gamesocket_ready = false;
-        public volatile static bool clientport_ready = false;
+        //public volatile static bool clientsocket_ready = false;
+        //public volatile static bool gamesocket_ready = false;
+        //public volatile static bool clientport_ready = false;
 
         //threads & queue
         //public Thread gameprocessdatathread;
-        public Thread oog_loginthread;
-        public Thread ig_loginthread;
-        public Thread ig_listener;
-        public Thread loginsendthread;
-        public Thread loginreadthread;
-        public Thread ig_Gamelistener;
-        public MixedPackets Mixer = null;
-        public ServerThread gamethread;
-        public ClientThread clientthread;
-        public GameServer gameprocessdatathread;
+        //public Thread oog_loginthread;
+        //public Thread ig_loginthread;
+        //public Thread ig_listener;
+        //public Thread loginsendthread;
+        //public Thread loginreadthread;
+        //public Thread ig_Gamelistener;
+        private MixedPackets _Mixer = null;
+        private ServerThread _gamethread;
+        private ClientThread _clientthread;
+        private GameServer _gameprocessdatathread;
         //public static BroadcastThread broadcastthread;
         //public static BotAIThread botaithread;
         //public static FollowRestThread followrestthread;
-        public ScriptEngine scriptthread;
-        public string Script_File = "";
+        private ScriptEngine _scriptthread;
+        private string _Script_File = "";
         private Queue _gamesendqueue = new Queue();
         private Queue _gamereadqueue = new Queue();
         private Queue _clientsendqueue = new Queue();
@@ -232,35 +232,25 @@ namespace L2Robot
         private Queue _PrivateMsgQueue = new Queue();
 
         //stat stuff
-        public static DateTime start_time;
-        public static int Login_State = 0;
+        //public static DateTime start_time;
+        //public static int Login_State = 0;
 
 
         //stats tabpage stuff
-        public static ulong meshless_ignored = 0;
-        public static ulong badmobs_ignored = 0;
-        public static ulong initial_Adena = 0;
-        public static ulong current_Adena = 0;
-        public static ulong initial_XP = 0;
-        public static ulong initial_SP = 0;
-        public volatile bool initial_XP_Gained_received = false;
-        public volatile bool initial_SP_Gained_received = false;
-        public volatile bool initial_Adena_Gained_received = false;
+        //public static ulong meshless_ignored = 0;
+        //public static ulong badmobs_ignored = 0;
+        //public static ulong initial_Adena = 0;
+        //public static ulong current_Adena = 0;
+        //public static ulong initial_XP = 0;
+        //public static ulong initial_SP = 0;
+        //public volatile bool initial_XP_Gained_received = false;
+        //public volatile bool initial_SP_Gained_received = false;
+        //public volatile bool initial_Adena_Gained_received = false;
 
 
-        public Stack stc_buffer = new Stack();
+        //public Stack stc_buffer = new Stack();
 
-        private static Player_Info _my_char = new Player_Info();
-#if false
-        private static Pet_Info _my_pet = new Pet_Info();
-        private static Pet_Info _my_pet1 = new Pet_Info();
-        private static Pet_Info _my_pet2 = new Pet_Info();
-        private static Pet_Info _my_pet3 = new Pet_Info();
-#endif
-
-        //private static BotOptions _botoptions = new BotOptions();
-        //private static AlertOptions _alertoptions;
-
+        private Player_Info _my_char = new Player_Info();
 
         private ArrayList _BuffsGiven = new ArrayList();
         private ArrayList _Moblist = new ArrayList();
@@ -270,13 +260,13 @@ namespace L2Robot
         private SortedList _buylist = new SortedList();
 
         private SortedList _PartyMembers = new SortedList();
-        public volatile uint PartyLeader = 0;
-        public volatile uint PartyLoot = 0;
-        public volatile uint PartyCount = 0;
-        public volatile uint LootType = 0;
+        //public volatile uint PartyLeader = 0;
+        //public volatile uint PartyLoot = 0;
+        //public volatile uint PartyCount = 0;
+        //public volatile uint LootType = 0;
 
-        public long LoginTime = 0;
-        public volatile uint GameTime = 0;
+        //public long LoginTime = 0;
+        //public volatile uint GameTime = 0;
 
         private SortedList _nearby_chars = new SortedList();
         private SortedList _nearby_npcs = new SortedList();
@@ -298,76 +288,102 @@ namespace L2Robot
         private Crypt _crypt_clientout;// = new Crypt();
         private Crypt _crypt_clientin;// = new Crypt();
 
-        public volatile bool BOTTING = true;
-        public volatile bool OOG = true;
+        private bool _BOTTING = true;
+        //public volatile bool OOG = true;
         public volatile bool teleported = false;
         //public volatile BotState BOT_STATE = BotState.Nothing;
-        public volatile bool autoreply = false;
-        public volatile bool autoreplyPM = false;
+        //public volatile bool autoreply = false;
+        //public volatile bool autoreplyPM = false;
 
         public volatile int Server_ID = 0;
         public volatile int Obfuscation_Key = 0;
 
-        public volatile uint yesno_state = 0;
+        //public volatile uint yesno_state = 0;
 
-        public volatile ScriptState CurrentScriptState = ScriptState.Stopped;
+        private ScriptState _CurrentScriptState = ScriptState.Stopped;
 
-        public volatile int _Client_Port;
+        public volatile int Client_Port;
 
-        private string _Login_IP;
-        public volatile int Login_Port;
+        public volatile string Login_IP;
+        //public volatile int Login_Port;
 
-        private string _Game_IP;
+        public volatile string Game_IP;
         public volatile int Game_Port;
 
-        private string _IG_Local_IP = "127.0.0.1";
-        private string _GG_IP = "127.0.0.1";
-        public volatile int IG_Local_Login_Port = 2106;
-        public volatile int IG_Local_Game_Port = 7777;
-        public volatile int GG_Port = 1337;
+        public volatile string IG_Local_IP = "127.0.0.1";
+        public volatile string GG_IP = "127.0.0.1";
+        //public volatile int IG_Local_Login_Port = 2106;
+        //public volatile int IG_Local_Game_Port = 7777;
+        //public volatile int GG_Port = 1337;
 
-        public volatile bool ManualGameKey = false;
-        public volatile bool Override_GameServer = false;
-        public volatile bool OverrideProtocol = false;
-        public volatile bool SecurityPinOldClient = false;
-        private string _Override_Game_IP;
+        //public volatile bool ManualGameKey = false;
+        //public volatile bool Override_GameServer = false;
+        //public volatile bool OverrideProtocol = false;
+        //public volatile bool SecurityPinOldClient = false;
+        public volatile string Override_Game_IP;
         public volatile int Override_Game_Port;
-        public volatile bool UseProxy_LoginServer = false;
-        public volatile bool UseProxy_GameServer = false;
-        private string _Proxy_IP;
-        public volatile int Proxy_Port;
-        private string _Proxy_UserName;
-        private string _Proxy_Password;
-        public volatile bool Unkown_Blowfish = false;
-        public volatile bool LS_GS_Same_IP = false;
-        public volatile bool SecurityPinWindow = false;
-        public volatile bool SecurityPinOk = false;
-        public volatile bool SecurityPinSent = false;
+        //public volatile bool UseProxy_LoginServer = false;
+        //public volatile bool UseProxy_GameServer = false;
+        public volatile string Proxy_IP;
+        //public volatile int Proxy_Port;
+        public volatile string Proxy_UserName;
+        public volatile string Proxy_Password;
+        //public volatile bool Unkown_Blowfish = false;
+        //public volatile bool LS_GS_Same_IP = false;
+        //public volatile bool SecurityPinWindow = false;
+        //public volatile bool SecurityPinOk = false;
+        //public volatile bool SecurityPinSent = false;
 
 
         public volatile Chronicle Chron;
 
-        public volatile int Protocol;//ushort
+        //public volatile int Protocol;//ushort
 
         public volatile bool logged_in = false;
         public volatile bool running = false;
-        public volatile bool drawing_game = false;
-        public volatile bool ig_login = false;
-        public volatile bool login_failed = false;
+        //public volatile bool drawing_game = false;
+        //public volatile bool ig_login = false;
+        //public volatile bool login_failed = false;
 
-        public volatile bool Control = false;
-        public volatile bool Shift = false;
-        public volatile bool AddPolygon = false;
-        public volatile bool PointClicked = false;
-        public volatile int New_Point_i;
-        public volatile uint blistID = 0;
+        //public volatile bool Control = false;
+        //public volatile bool Shift = false;
+        //public volatile bool AddPolygon = false;
+        //public volatile bool PointClicked = false;
+        //public volatile int New_Point_i;
+        //public volatile uint blistID = 0;
         public volatile uint cur_zone = 0;
 
 
-        public volatile System.Net.Sockets.Socket GGsocket;
+        //public volatile System.Net.Sockets.Socket GGsocket;
 
         //TD:Global pathmanager for A*
         private PathManager _pathManager = new PathManager();
+
+        private readonly object MixerLock = new object();
+        private readonly object gamethreadLock = new object();
+        private readonly object clientthreadLock = new object();
+        private readonly object gameprocessdatathreadLock = new object();
+        private readonly object scriptthreadLock = new object();
+        private readonly object Script_FileLock = new object();
+
+        //private readonly object InListLock = new object();
+        private readonly object Game_ClientLinkLock = new object();
+        private readonly object Game_GameSocketLock = new object();
+        private readonly object Game_ClientSocketLock = new object();
+
+        private readonly object BOTTINGLock = new object();
+
+        //private readonly object Server_IDLock = new object();
+
+        //private readonly object Obfuscation_KeyLock = new object();
+
+        private readonly object CurrentScriptStateLock = new object();
+
+        private readonly object Game_PortLock = new object();
+
+        //private readonly object Cur_ZoneLock = new object();
+
+
 
         private readonly object PartyMembersLock = new object();
         private readonly object ShortCutsLock = new object();
@@ -375,10 +391,10 @@ namespace L2Robot
         private readonly object gameguardInitLock = new object();
         private readonly object skillsLock = new object();
         private readonly object buffsLock = new object();
-        private readonly object Proxy_IPLock = new object();
-        private readonly object Proxy_UserNameLock = new object();
-        private readonly object Proxy_PasswordLock = new object();
-        private readonly object Override_Game_IPLock = new object();
+        //private readonly object Proxy_IPLock = new object();
+        //private readonly object Proxy_UserNameLock = new object();
+        //private readonly object Proxy_PasswordLock = new object();
+        //private readonly object Override_Game_IPLock = new object();
         private readonly object ChangingScriptstateLock = new object();
         private readonly object PathsLock = new object();
         private readonly object WallsLock = new object();
@@ -392,11 +408,11 @@ namespace L2Robot
         private readonly object crypt_clientinLock = new object();
         private readonly object BuffsGivenLock = new object();
         private readonly object MoblistLock = new object();
-        private readonly object IG_Local_IPLock = new object();
-        private readonly object GG_IPLock = new object();
-        private readonly object Login_IPLock = new object();
-        private readonly object Game_IPLock = new object();
-        private readonly object Client_PortLock = new object();
+        //private readonly object IG_Local_IPLock = new object();
+        //private readonly object GG_IPLock = new object();
+        //private readonly object Login_IPLock = new object();
+        //private readonly object Game_IPLock = new object();
+        //private readonly object Client_PortLock = new object();
         private readonly object gamesendqueueLock = new object();
         private readonly object gamereadqueueLock = new object();
         private readonly object clientsendqueueLock = new object();
@@ -411,8 +427,9 @@ namespace L2Robot
         private readonly object pathManagerLock = new object();
         //old SummonIDs
         //public uint[] SummonIDs = new uint[] { 1538, 1561, 12077, 12311, 12312, 12313, 12526, 12527, 12528, 12564, 12621, 14001, 14002, 14003, 14004, 14005, 14006, 14007, 14008, 14009, 14010, 14011, 14012, 14013, 14014, 14015, 14016, 14017, 14018, 14019, 14020, 14021, 14022, 14023, 14024, 14025, 14026, 14027, 14028, 14029, 14030, 14031, 14032, 14033, 14034, 14035, 14036, 14037, 14038, 14039, 14040, 14041, 14042, 14043, 14044, 14045, 14046, 14047, 14048, 14049, 14050, 14051, 14052, 14053, 14054, 14055, 14056, 14057, 14058, 14059, 14060, 14061, 14062, 14063, 14064, 14065, 14066, 14067, 14068, 14069, 14070, 14071, 14072, 14073, 14074, 14075, 14076, 14077, 14078, 14079, 14080, 14081, 14082, 14083, 14084, 14085, 14086, 14087, 14088, 14089, 14090, 14091, 14092, 14093, 14094, 14095, 14096, 14097, 14098, 14099, 14100, 14101, 14102, 14103, 14104, 14105, 14106, 14107, 14108, 14109, 14110, 14111, 14112, 14113, 14114, 14115, 14116, 14117, 14118, 14119, 14120, 14121, 14122, 14123, 14124, 14125, 14126, 14127, 14128, 14129, 14130, 14131, 14132, 14133, 14134, 14135, 14136, 14137, 14138, 14139, 14140, 14141, 14142, 14143, 14144, 14145, 14146, 14147, 14148, 14149, 14150, 14151, 14152, 14153, 14154, 14155, 14156, 14157, 14158, 14159, 14160, 14161, 14162, 14163, 14164, 14165, 14166, 14167, 14168, 14169, 14170, 14171, 14172, 14173, 14174, 14175, 14176, 14177, 14178, 14179, 14180, 14181, 14182, 14183, 14184, 14185, 14186, 14187, 14188, 14189, 14190, 14191, 14192, 14193, 14194, 14195, 14196, 14197, 14198, 14199, 14200, 14201, 14202, 14203, 14204, 14205, 14206, 14207, 14208, 14209, 14210, 14211, 14212, 14213, 14214, 14215, 14216, 14217, 14218, 14219, 14220, 14221, 14222, 14223, 14224, 14225, 14226, 14227, 14228, 14229, 14230, 14231, 14232, 14233, 14234, 14235, 14236, 14237, 14238, 14239, 14240, 14241, 14242, 14243, 14244, 14245, 14246, 14247, 14248, 14249, 14250, 14251, 14252, 14253, 14254, 14255, 14256, 14257, 14258, 14259, 14260, 14265, 14266, 14267, 14268, 14269, 14270, 14271, 14272, 14273, 14274, 14275, 14276, 14277, 14278, 14279, 14280, 14281, 14282, 14283, 14284, 14285, 14286, 14287, 14288, 14289, 14290, 14291, 14292, 14293, 14294, 14295, 14296, 14297, 14298, 14299, 14300, 14301, 14302, 14303, 14304, 14305, 14306, 14307, 14308, 14309, 14310, 14311, 14312, 14313, 14314, 14315, 14316, 14317, 14318, 14319, 14320, 14321, 14322, 14323, 14324, 14325, 14326, 14327, 14328, 14329, 14330, 14331, 14332, 14333, 14334, 14335, 14336, 14337, 14338, 14339, 14340, 14341, 14342, 14343, 14344, 14345, 14346, 14347, 14348, 14349, 14350, 14351, 14352, 14353, 14354, 14355, 14356, 14357, 14358, 14359, 14360, 14361, 14362, 14363, 14364, 14365, 14366, 14367, 14368, 14369, 14370, 14371, 14372, 14373, 14374, 14375, 14376, 14377, 14378, 14379, 14380, 14381, 14382, 14383, 14384, 14385, 14386, 14387, 14388, 14389, 14390, 14391, 14392, 14393, 14394, 14395, 14396, 14397, 14398, 14399, 14400, 14401, 14402, 14403, 14404, 14405, 14406, 14407, 14408, 14409, 14410, 14411, 14412, 14413, 14414, 14415, 14416, 14417, 14418, 14419, 14420, 14421, 14422, 14423, 14424, 14425, 14426, 14427, 14428, 14429, 14430, 14431, 14432, 14433, 14434, 14435, 14436, 14437, 14438, 14439, 14440, 14441, 14442, 14443, 14444, 14449, 14450, 14451, 14452, 14453, 14454, 14455, 14456, 14457, 14458, 14459, 14460, 14461, 14462, 14463, 14464, 14465, 14466, 14467, 14468, 14469, 14470, 14471, 14472, 14473, 14474, 14475, 14476, 14477, 14478, 14479, 14480, 14481, 14482, 14483, 14484, 14485, 14486, 14487, 14488, 14489, 14490, 14491, 14492, 14493, 14494, 14495, 14496, 14497, 14498, 14499, 14500, 14501, 14502, 14503, 14504, 14505, 14506, 14507, 14508, 14509, 14510, 14511, 14512, 14513, 14514, 14515, 14516, 14517, 14518, 14519, 14520, 14521, 14522, 14523, 14524, 14525, 14526, 14527, 14528, 14529, 14530, 14531, 14532, 14533, 14534, 14535, 14536, 14537, 14538, 14539, 14540, 14541, 14542, 14543, 14544, 14545, 14546, 14547, 14548, 14549, 14550, 14551, 14552, 14553, 14554, 14555, 14556, 14557, 14558, 14559, 14560, 14561, 14562, 14563, 14564, 14565, 14566, 14567, 14568, 14569, 14570, 14571, 14572, 14573, 14574, 14575, 14576, 14577, 14578, 14579, 14580, 14581, 14582, 14583, 14584, 14585, 14586, 14587, 14588, 14589, 14590, 14591, 14592, 14593, 14594, 14595, 14596, 14597, 14598, 14599, 14600, 14601, 14602, 14603, 14604, 14605, 14606, 14607, 14608, 14609, 14610, 14611, 14612, 14613, 14614, 14615, 14616, 14617, 14618, 14619, 14620, 14621, 14622, 14623, 14624, 14625, 14626, 14627, 14628, 14633, 14634, 14635, 14636, 14637, 14638, 14639, 14640, 14641, 14642, 14643, 14644, 14645, 14646, 14647, 14648, 14649, 14650, 14651, 14652, 14653, 14654, 14655, 14656, 14657, 14658, 14659, 14660, 14661, 14662, 14663, 14664, 14665, 14666, 14667, 14668, 14669, 14670, 14671, 14672, 14673, 14674, 14675, 14676, 14677, 14678, 14679, 14680, 14681, 14682, 14683, 14684, 14685, 14686, 14687, 14688, 14689, 14690, 14691, 14692, 14693, 14694, 14695, 14696, 14697, 14698, 14699, 14700, 14701, 14702, 14703, 14704, 14705, 14706, 14707, 14708, 14709, 14710, 14711, 14712, 14713, 14714, 14715, 14716, 14717, 14718, 14719, 14720, 14721, 14722, 14723, 14724, 14725, 14726, 14727, 14728, 14729, 14730, 14731, 14732, 14733, 14734, 14735, 14736, 14799, 14800, 14801, 14802, 14803, 14804, 14805, 14806, 14807, 14808, 14809, 14810, 14811, 14812, 14813, 14814, 14815, 14816, 14817, 14818, 14819, 14820, 14821, 14822, 14823, 14824, 14825, 14826, 14827, 14828, 14829, 14830, 14831, 14832, 14833, 14834, 14835, 14836, 14837, 14838, 14870, 14871, 14872, 14873, 14874, 14875, 14876, 14877, 14878, 14879, 14880, 14881, 14882, 14883, 14884, 14885, 14886, 14887, 14888, 14889, 14890, 14891, 14892, 14893, 14894, 14895, 14896, 14897, 14898, 14899, 14900, 14901, 14902, 14903, 14904, 14905, 14906, 14907, 14908, 14909, 14910, 14911, 14912, 14913, 14914, 14915, 14916, 14917, 14918, 16025, 16030, 16037, 16038, 16039, 16040, 16041, 16042, 16043, 16044, 16045, 16046, 16050, 16051, 16052, 16053, 16067, 16068 };
-        public uint[] SummonIDs = new uint[] { 14702, 14703, 14704, 14705, 14706, 14707, 14708, 14709, 14710, 14711, 14712, 14713, 14714, 14715, 14716, 14717, 14718, 14719, 14720, 14721, 14722, 14723, 14724, 14725, 14726, 14727, 14728, 14729, 14730, 14731, 14732, 14733, 14734, 14735, 14736, 106, 139, 14296, 14298, 14300, 14301, 14302, 14303, 14304, 14305, 14306, 14307, 14308, 14309, 14310, 14311, 14312, 14313, 14314, 14315, 14316, 14317, 14318, 14319, 14320, 14321, 14322, 14323, 14324, 14325, 14326, 14327, 14328, 14329, 14330, 14331, 14332, 14333, 14334, 14335, 14336, 14337, 14338, 14339, 14340, 14341, 14342, 14295, 14297, 14299, 14929, 14947, 14948, 14949, 14950, 14951, 14952, 14953, 14971, 15022, 15023, 15024, 15025, 15026, 15027, 15028, 15029, 15030, 15031, 14074, 14075, 14076, 14077, 14078, 14079, 14080, 14081, 14082, 14083, 14084, 14085, 14086, 14087, 14088, 14089, 14090, 14091, 14092, 14093, 14094, 14095, 14096, 14097, 14098, 14099, 14100, 14101, 14102, 14103, 14104, 14105, 14106, 14107, 14108, 14109, 14110, 19365, 19387, 14799, 14800, 14801, 14802, 14803, 14804, 14805, 14806, 14807, 14808, 14809, 14810, 14811, 14812, 14813, 14814, 14815, 14816, 14817, 14818, 14819, 14820, 14821, 14822, 14823, 14824, 14825, 14826, 14827, 14828, 14829, 14830, 14831, 14832, 14833, 14834, 14835, 14038, 14039, 14040, 14041, 14042, 14043, 14044, 14045, 14046, 14047, 14048, 14049, 14050, 14051, 14052, 14053, 14054, 14055, 14056, 14057, 14058, 14059, 14060, 14061, 14062, 14063, 14064, 14065, 14066, 14067, 14068, 14069, 14070, 14071, 14072, 14073, 14836, 14871, 14872, 14873, 14874, 14875, 14876, 14877, 14878, 14879, 14880, 14881, 14882, 14883, 14884, 14885, 14251, 14252, 14253, 14254, 14255, 14256, 14257, 14258, 14259, 14260, 14265, 14266, 14267, 14268, 14269, 14270, 14271, 14272, 14273, 14274, 14275, 14276, 14277, 14278, 14279, 14280, 14281, 14282, 14283, 14284, 14285, 14286, 14287, 14288, 14289, 14290, 14291, 14292, 14293, 14294, 14207, 14208, 14209, 14210, 14211, 14212, 14213, 14214, 14215, 14216, 14217, 14218, 14219, 14220, 14221, 14222, 14223, 14224, 14225, 14226, 14227, 14228, 14229, 14230, 14231, 14232, 14233, 14234, 14235, 14236, 14237, 14238, 14239, 14240, 14241, 14242, 14243, 14244, 14245, 14246, 14247, 14248, 14249, 14250, 14111, 14112, 14113, 14114, 14115, 14116, 14117, 14118, 14119, 14120, 14121, 14122, 14123, 14124, 14125, 14126, 14127, 14128, 14129, 14130, 14131, 14132, 14133, 14134, 14135, 14136, 14137, 14138, 14139, 14140, 14141, 14142, 14143, 14144, 14145, 14146, 14147, 14148, 14149, 14150, 14151, 14152, 14153, 14154, 14155, 14156, 14157, 14158, 14837, 14886, 14887, 14888, 14889, 14890, 14891, 14892, 14893, 14894, 14895, 14896, 14897, 14898, 14899, 14900, 14663, 14664, 14665, 14666, 14667, 14668, 14669, 14670, 14671, 14672, 14673, 14674, 14675, 14676, 14677, 14678, 14679, 14680, 14681, 14682, 14683, 14684, 14685, 14686, 14687, 14688, 14689, 14690, 14691, 14692, 14693, 14694, 14695, 14696, 14697, 14698, 14699, 14700, 14701, 14391, 14392, 14393, 14394, 14395, 14396, 14397, 14398, 14399, 14400, 14401, 14402, 14403, 14404, 14405, 14406, 14407, 14408, 14409, 14410, 14411, 14412, 14413, 14414, 14415, 14416, 14417, 14418, 14419, 14420, 14421, 14422, 14423, 14424, 14425, 14426, 14427, 14428, 14429, 14430, 14431, 14432, 14433, 14434, 14159, 14160, 14161, 14162, 14163, 14164, 14165, 14166, 14167, 14168, 14169, 14170, 14171, 14172, 14173, 14174, 14175, 14176, 14177, 14178, 14179, 14180, 14181, 14182, 14183, 14184, 14185, 14186, 14187, 14188, 14189, 14190, 14191, 14192, 14193, 14194, 14195, 14196, 14197, 14198, 14199, 14200, 14201, 14202, 14203, 14204, 14205, 14206, 14343, 14345, 14347, 14349, 14350, 14351, 14352, 14353, 14354, 14355, 14356, 14357, 14358, 14359, 14360, 14344, 14346, 14348, 14361, 14362, 14363, 14364, 14365, 14366, 14367, 14368, 14369, 14370, 14371, 14372, 14373, 14374, 14375, 14376, 14377, 14378, 14379, 14380, 14381, 14382, 14383, 14384, 14385, 14386, 14387, 14388, 14389, 14390, 14619, 14620, 14621, 14622, 14623, 14624, 14625, 14626, 14627, 14628, 14633, 14634, 14635, 14636, 14637, 14638, 14639, 14640, 14641, 14642, 14643, 14644, 14645, 14646, 14647, 14648, 14649, 14650, 14651, 14652, 14653, 14654, 14655, 14656, 14657, 14658, 14659, 14660, 14661, 14662, 14001, 14002, 14003, 14004, 14005, 14006, 14007, 14008, 14009, 14010, 14011, 14012, 14013, 14014, 14015, 14016, 14017, 14018, 14019, 14020, 14021, 14022, 14023, 14024, 14025, 14026, 14027, 14028, 14029, 14030, 14031, 14032, 14033, 14034, 14035, 14036, 14037, 14930, 14954, 14955, 14956, 14957, 14958, 14959, 14960, 14972, 15032, 15033, 15034, 15035, 15036, 15037, 15038, 15039, 15040, 15041, 14435, 14436, 14437, 14438, 14439, 14440, 14441, 14442, 14443, 14444, 14449, 14450, 14451, 14452, 14453, 14454, 14455, 14456, 14457, 14458, 14459, 14460, 14461, 14462, 14463, 14464, 14465, 14466, 14467, 14468, 14469, 14470, 14471, 14472, 14473, 14474, 14475, 14476, 14477, 14478, 14479, 14480, 14481, 14482, 14483, 14484, 14485, 14486, 14487, 14488, 14489, 14490, 14491, 14492, 14493, 14494, 14495, 14496, 14497, 14498, 14499, 14500, 14501, 14502, 14503, 14504, 14505, 14506, 14507, 14508, 14509, 14510, 14511, 14512, 14513, 14514, 14515, 14516, 14517, 14518, 14519, 14520, 14521, 14522, 14523, 14524, 14525, 14526, 14527, 14528, 14529, 14530, 14531, 14532, 14533, 14534, 14535, 14536, 14537, 14538, 14539, 14540, 14541, 14542, 14543, 14544, 14545, 14546, 14547, 14548, 14549, 14550, 14551, 14552, 14553, 14554, 14555, 14556, 14557, 14558, 14559, 14560, 14561, 14562, 14563, 14564, 14565, 14566, 14567, 14568, 14569, 14570, 14571, 14572, 14573, 14574, 16098, 16099, 16100, 16101, 16102, 12564, 14575, 14576, 14577, 14578, 14579, 14580, 14581, 14582, 14583, 14584, 14585, 14586, 14587, 14588, 14589, 14590, 14591, 14592, 14593, 14594, 14595, 14596, 14597, 14598, 14599, 14600, 14601, 14602, 14603, 14604, 14605, 14606, 14607, 14608, 14609, 14610, 14611, 14612, 14613, 14614, 14615, 14616, 14617, 14618, 30627, 19256, 2529, 14933, 14943, 15010, 15011, 15012, 15013, 15014, 15015, 15016, 15017, 15018, 15019, 15020, 15021, 14925, 14944, 14945, 14946, 15000, 15001, 15002, 15003, 15004, 15005, 15006, 15007, 15008, 15009, 14931, 14961, 14962, 14963, 14964, 14965, 14966, 14967, 14973, 15042, 15043, 15044, 15045, 15046, 15047, 15048, 15049, 15050, 15051, 14936, 14937, 14938, 14939, 14974, 14975, 14976, 14977, 14978, 14979, 14980, 14981, 14982, 14983, 14984, 14985 };
+        //public uint[] SummonIDs = new uint[] { 14702, 14703, 14704, 14705, 14706, 14707, 14708, 14709, 14710, 14711, 14712, 14713, 14714, 14715, 14716, 14717, 14718, 14719, 14720, 14721, 14722, 14723, 14724, 14725, 14726, 14727, 14728, 14729, 14730, 14731, 14732, 14733, 14734, 14735, 14736, 106, 139, 14296, 14298, 14300, 14301, 14302, 14303, 14304, 14305, 14306, 14307, 14308, 14309, 14310, 14311, 14312, 14313, 14314, 14315, 14316, 14317, 14318, 14319, 14320, 14321, 14322, 14323, 14324, 14325, 14326, 14327, 14328, 14329, 14330, 14331, 14332, 14333, 14334, 14335, 14336, 14337, 14338, 14339, 14340, 14341, 14342, 14295, 14297, 14299, 14929, 14947, 14948, 14949, 14950, 14951, 14952, 14953, 14971, 15022, 15023, 15024, 15025, 15026, 15027, 15028, 15029, 15030, 15031, 14074, 14075, 14076, 14077, 14078, 14079, 14080, 14081, 14082, 14083, 14084, 14085, 14086, 14087, 14088, 14089, 14090, 14091, 14092, 14093, 14094, 14095, 14096, 14097, 14098, 14099, 14100, 14101, 14102, 14103, 14104, 14105, 14106, 14107, 14108, 14109, 14110, 19365, 19387, 14799, 14800, 14801, 14802, 14803, 14804, 14805, 14806, 14807, 14808, 14809, 14810, 14811, 14812, 14813, 14814, 14815, 14816, 14817, 14818, 14819, 14820, 14821, 14822, 14823, 14824, 14825, 14826, 14827, 14828, 14829, 14830, 14831, 14832, 14833, 14834, 14835, 14038, 14039, 14040, 14041, 14042, 14043, 14044, 14045, 14046, 14047, 14048, 14049, 14050, 14051, 14052, 14053, 14054, 14055, 14056, 14057, 14058, 14059, 14060, 14061, 14062, 14063, 14064, 14065, 14066, 14067, 14068, 14069, 14070, 14071, 14072, 14073, 14836, 14871, 14872, 14873, 14874, 14875, 14876, 14877, 14878, 14879, 14880, 14881, 14882, 14883, 14884, 14885, 14251, 14252, 14253, 14254, 14255, 14256, 14257, 14258, 14259, 14260, 14265, 14266, 14267, 14268, 14269, 14270, 14271, 14272, 14273, 14274, 14275, 14276, 14277, 14278, 14279, 14280, 14281, 14282, 14283, 14284, 14285, 14286, 14287, 14288, 14289, 14290, 14291, 14292, 14293, 14294, 14207, 14208, 14209, 14210, 14211, 14212, 14213, 14214, 14215, 14216, 14217, 14218, 14219, 14220, 14221, 14222, 14223, 14224, 14225, 14226, 14227, 14228, 14229, 14230, 14231, 14232, 14233, 14234, 14235, 14236, 14237, 14238, 14239, 14240, 14241, 14242, 14243, 14244, 14245, 14246, 14247, 14248, 14249, 14250, 14111, 14112, 14113, 14114, 14115, 14116, 14117, 14118, 14119, 14120, 14121, 14122, 14123, 14124, 14125, 14126, 14127, 14128, 14129, 14130, 14131, 14132, 14133, 14134, 14135, 14136, 14137, 14138, 14139, 14140, 14141, 14142, 14143, 14144, 14145, 14146, 14147, 14148, 14149, 14150, 14151, 14152, 14153, 14154, 14155, 14156, 14157, 14158, 14837, 14886, 14887, 14888, 14889, 14890, 14891, 14892, 14893, 14894, 14895, 14896, 14897, 14898, 14899, 14900, 14663, 14664, 14665, 14666, 14667, 14668, 14669, 14670, 14671, 14672, 14673, 14674, 14675, 14676, 14677, 14678, 14679, 14680, 14681, 14682, 14683, 14684, 14685, 14686, 14687, 14688, 14689, 14690, 14691, 14692, 14693, 14694, 14695, 14696, 14697, 14698, 14699, 14700, 14701, 14391, 14392, 14393, 14394, 14395, 14396, 14397, 14398, 14399, 14400, 14401, 14402, 14403, 14404, 14405, 14406, 14407, 14408, 14409, 14410, 14411, 14412, 14413, 14414, 14415, 14416, 14417, 14418, 14419, 14420, 14421, 14422, 14423, 14424, 14425, 14426, 14427, 14428, 14429, 14430, 14431, 14432, 14433, 14434, 14159, 14160, 14161, 14162, 14163, 14164, 14165, 14166, 14167, 14168, 14169, 14170, 14171, 14172, 14173, 14174, 14175, 14176, 14177, 14178, 14179, 14180, 14181, 14182, 14183, 14184, 14185, 14186, 14187, 14188, 14189, 14190, 14191, 14192, 14193, 14194, 14195, 14196, 14197, 14198, 14199, 14200, 14201, 14202, 14203, 14204, 14205, 14206, 14343, 14345, 14347, 14349, 14350, 14351, 14352, 14353, 14354, 14355, 14356, 14357, 14358, 14359, 14360, 14344, 14346, 14348, 14361, 14362, 14363, 14364, 14365, 14366, 14367, 14368, 14369, 14370, 14371, 14372, 14373, 14374, 14375, 14376, 14377, 14378, 14379, 14380, 14381, 14382, 14383, 14384, 14385, 14386, 14387, 14388, 14389, 14390, 14619, 14620, 14621, 14622, 14623, 14624, 14625, 14626, 14627, 14628, 14633, 14634, 14635, 14636, 14637, 14638, 14639, 14640, 14641, 14642, 14643, 14644, 14645, 14646, 14647, 14648, 14649, 14650, 14651, 14652, 14653, 14654, 14655, 14656, 14657, 14658, 14659, 14660, 14661, 14662, 14001, 14002, 14003, 14004, 14005, 14006, 14007, 14008, 14009, 14010, 14011, 14012, 14013, 14014, 14015, 14016, 14017, 14018, 14019, 14020, 14021, 14022, 14023, 14024, 14025, 14026, 14027, 14028, 14029, 14030, 14031, 14032, 14033, 14034, 14035, 14036, 14037, 14930, 14954, 14955, 14956, 14957, 14958, 14959, 14960, 14972, 15032, 15033, 15034, 15035, 15036, 15037, 15038, 15039, 15040, 15041, 14435, 14436, 14437, 14438, 14439, 14440, 14441, 14442, 14443, 14444, 14449, 14450, 14451, 14452, 14453, 14454, 14455, 14456, 14457, 14458, 14459, 14460, 14461, 14462, 14463, 14464, 14465, 14466, 14467, 14468, 14469, 14470, 14471, 14472, 14473, 14474, 14475, 14476, 14477, 14478, 14479, 14480, 14481, 14482, 14483, 14484, 14485, 14486, 14487, 14488, 14489, 14490, 14491, 14492, 14493, 14494, 14495, 14496, 14497, 14498, 14499, 14500, 14501, 14502, 14503, 14504, 14505, 14506, 14507, 14508, 14509, 14510, 14511, 14512, 14513, 14514, 14515, 14516, 14517, 14518, 14519, 14520, 14521, 14522, 14523, 14524, 14525, 14526, 14527, 14528, 14529, 14530, 14531, 14532, 14533, 14534, 14535, 14536, 14537, 14538, 14539, 14540, 14541, 14542, 14543, 14544, 14545, 14546, 14547, 14548, 14549, 14550, 14551, 14552, 14553, 14554, 14555, 14556, 14557, 14558, 14559, 14560, 14561, 14562, 14563, 14564, 14565, 14566, 14567, 14568, 14569, 14570, 14571, 14572, 14573, 14574, 16098, 16099, 16100, 16101, 16102, 12564, 14575, 14576, 14577, 14578, 14579, 14580, 14581, 14582, 14583, 14584, 14585, 14586, 14587, 14588, 14589, 14590, 14591, 14592, 14593, 14594, 14595, 14596, 14597, 14598, 14599, 14600, 14601, 14602, 14603, 14604, 14605, 14606, 14607, 14608, 14609, 14610, 14611, 14612, 14613, 14614, 14615, 14616, 14617, 14618, 30627, 19256, 2529, 14933, 14943, 15010, 15011, 15012, 15013, 15014, 15015, 15016, 15017, 15018, 15019, 15020, 15021, 14925, 14944, 14945, 14946, 15000, 15001, 15002, 15003, 15004, 15005, 15006, 15007, 15008, 15009, 14931, 14961, 14962, 14963, 14964, 14965, 14966, 14967, 14973, 15042, 15043, 15044, 15045, 15046, 15047, 15048, 15049, 15050, 15051, 14936, 14937, 14938, 14939, 14974, 14975, 14976, 14977, 14978, 14979, 14980, 14981, 14982, 14983, 14984, 14985 };
 
+        /*
         public SortedList ClassNick = new SortedList()
         {
             {0,"Lo"},       // Human Fighter
@@ -519,7 +536,7 @@ namespace L2Robot
             {135,"Insp"},   // Inspector
             {136,"Insp+"},  // Judicator
         };
-
+        */
         public GameData()
         {
             CreateCrypt();
@@ -534,9 +551,47 @@ namespace L2Robot
             crypt_clientout = new Crypt();
         }
 
+        public void SendToGameServerInject(ByteBuffer buff)
+        {
+            Console.WriteLine("[Inject]:" + BitConverter.ToString(buff._data, 0).Replace("-", string.Empty).ToLower());
+
+            if (Mixer != null)
+            {
+                Mixer.Encrypt0(buff);
+            }
+
+            Globals.GameSendQueueLock.EnterWriteLock();
+            try
+            {
+                gamesendqueue.Enqueue(buff);
+            }
+            finally
+            {
+                Globals.GameSendQueueLock.ExitWriteLock();
+            }
+
+            if (gamethread.sendthread.ThreadState == ThreadState.WaitSleepJoin)
+            {
+                try
+                {
+                    gamethread.sendthread.Interrupt();
+                }
+                catch (ThreadInterruptedException)
+                {
+                    //everything worked perfect
+                }
+                catch
+                {
+                    //Globals.l2net_home.Add_Error("SendToGameServer error");
+                }
+            }
+        }
+
         public void SendToGameServer(ByteBuffer buff)
         {
             {
+                //Console.WriteLine("[Script]:" + BitConverter.ToString(buff._data, 0).Replace("-", string.Empty).ToLower());
+
                 if (Mixer != null)
                 {
                     Mixer.Encrypt0(buff);
@@ -744,6 +799,291 @@ namespace L2Robot
             }
         }
 #endif
+
+/*
+        public bool InList
+        {
+            get
+            {
+                bool tmp;
+                lock (InListLock)
+                {
+                    tmp = this._InList;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (InListLock)
+                {
+                    _InList = value;
+                }
+            }
+        }
+*/
+
+        public Socket Game_GameSocket
+        {
+            get
+            {
+                Socket tmp;
+                lock (Game_GameSocketLock)
+                {
+                    tmp = this._Game_GameSocket;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (Game_GameSocketLock)
+                {
+                    _Game_GameSocket = value;
+                }
+            }
+        }
+
+        public TcpListener Game_ClientLink
+        {
+            get
+            {
+                TcpListener tmp;
+                lock (Game_ClientLinkLock)
+                {
+                    tmp = this._Game_ClientLink;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (Game_ClientLinkLock)
+                {
+                    _Game_ClientLink = value;
+                }
+            }
+        }
+
+        public Socket Game_ClientSocket
+        {
+            get
+            {
+                Socket tmp;
+                lock (Game_ClientSocketLock)
+                {
+                    tmp = this._Game_ClientSocket;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (Game_ClientSocketLock)
+                {
+                    _Game_ClientSocket = value;
+                }
+            }
+        }
+
+        public MixedPackets Mixer
+        {
+            get
+            {
+                MixedPackets tmp;
+                lock (MixerLock)
+                {
+                    tmp = this._Mixer;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (MixerLock)
+                {
+                    _Mixer = value;
+                }
+            }
+        }
+
+        public ServerThread gamethread
+        {
+            get
+            {
+                ServerThread tmp;
+                lock (gamethreadLock)
+                {
+                    tmp = this._gamethread;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (gamethreadLock)
+                {
+                    _gamethread = value;
+                }
+            }
+        }
+
+        public ClientThread clientthread
+        {
+            get
+            {
+                ClientThread tmp;
+                lock (clientthreadLock)
+                {
+                    tmp = this._clientthread;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (clientthreadLock)
+                {
+                    _clientthread = value;
+                }
+            }
+        }
+
+        public GameServer gameprocessdatathread
+        {
+            get
+            {
+                GameServer tmp;
+                lock (gameprocessdatathreadLock)
+                {
+                    tmp = this._gameprocessdatathread;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (gameprocessdatathreadLock)
+                {
+                    _gameprocessdatathread = value;
+                }
+            }
+        }
+
+        public ScriptEngine scriptthread
+        {
+            get
+            {
+                ScriptEngine tmp;
+                lock (scriptthreadLock)
+                {
+                    tmp = this._scriptthread;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (scriptthreadLock)
+                {
+                    _scriptthread = value;
+                }
+            }
+        }
+
+        public string Script_File
+        {
+            get
+            {
+                string tmp;
+                lock (Script_FileLock)
+                {
+                    tmp = this._Script_File;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (Script_FileLock)
+                {
+                    _Script_File = value;
+                }
+            }
+        }
+
+
+        public bool BOTTING
+        {
+            get
+            {
+                bool tmp;
+                lock (BOTTINGLock)
+                {
+                    tmp = this._BOTTING;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (BOTTINGLock)
+                {
+                    _BOTTING = value;
+                }
+            }
+        }
+
+/*
+        public int Server_ID
+        {
+            get
+            {
+                int tmp;
+                lock (Server_IDLock)
+                {
+                    tmp = this._Server_ID;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (Server_IDLock)
+                {
+                    _Server_ID = value;
+                }
+            }
+        }
+
+        public int Obfuscation_Key
+        {
+            get
+            {
+                int tmp;
+                lock (Obfuscation_KeyLock)
+                {
+                    tmp = this._Obfuscation_Key;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (Obfuscation_KeyLock)
+                {
+                    _Obfuscation_Key = value;
+                }
+            }
+        }
+*/
+
+        public ScriptState CurrentScriptState
+        {
+            get
+            {
+                ScriptState tmp;
+                lock (CurrentScriptStateLock)
+                {
+                    tmp = this._CurrentScriptState;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (CurrentScriptStateLock)
+                {
+                    _CurrentScriptState = value;
+                }
+            }
+        }
 
         public ArrayList Walls
         {
@@ -997,7 +1337,7 @@ namespace L2Robot
                 }
             }
         }
-
+/*
         public int Client_Port
         {
             get
@@ -1014,6 +1354,27 @@ namespace L2Robot
                 lock (Client_PortLock)
                 {
                     _Client_Port = value;
+                }
+            }
+        }
+
+
+        public uint cur_zone
+        {
+            get
+            {
+                uint tmp;
+                lock (Cur_ZoneLock)
+                {
+                    tmp = this._cur_zone;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (Cur_ZoneLock)
+                {
+                    _cur_zone = value;
                 }
             }
         }
@@ -1076,6 +1437,26 @@ namespace L2Robot
             }
         }
 
+        public int Game_Port
+        {
+            get
+            {
+                int tmp;
+                lock (Game_PortLock)
+                {
+                    tmp = this._Game_Port;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (Game_PortLock)
+                {
+                    _Game_Port = value;
+                }
+            }
+        }
+
         public string GG_IP
         {
             get
@@ -1116,6 +1497,7 @@ namespace L2Robot
                 }
             }
         }
+
         public string Proxy_IP
         {
             get
@@ -1173,6 +1555,7 @@ namespace L2Robot
                 }
             }
         }
+*/
         public ArrayList BuffsGiven
         {
             get

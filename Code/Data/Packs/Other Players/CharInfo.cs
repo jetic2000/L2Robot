@@ -500,7 +500,7 @@ namespace L2Robot
         {
             int loc = buff.GetIndex();
             int size = buff.ReadInt16(); //size
-            Console.WriteLine("Loc: {0}, Load: {1}", loc, size);
+            //Console.WriteLine("Loc: {0}, Load: {1}", loc, size);
             ID = buff.ReadUInt32();//A0 B9 B0 49
             buff.SetIndex(loc + size);
             buff.ReadInt32();
@@ -517,7 +517,7 @@ namespace L2Robot
             }
             byte[] PlayerName = unicodeChars.ToArray();
             Name = Encoding.Unicode.GetString(PlayerName);
-            Console.WriteLine("User ID: 0x{0:x}, Name: {1}", ID,  Name);
+            //Console.WriteLine("Char {0}[0x{1:x}] -> ({2},{3},{4})", Name, ID, X, Y, Z);
         }
 
         public void Load_UI(ByteBuffer buff)

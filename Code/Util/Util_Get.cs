@@ -119,20 +119,6 @@ namespace L2Robot
             {
                 Globals.PlayerLock.ExitReadLock();
             }
-
-            Globals.NPCLock.EnterReadLock();
-            try
-            {
-                if (isNPC(gamedata, id))
-                {
-                    return TargetType.NPC;
-                }
-            }
-            finally
-            {
-                Globals.NPCLock.ExitReadLock();
-            }
-
             return TargetType.ERROR;
         }
 

@@ -387,6 +387,7 @@ namespace L2Robot
         public static ReaderWriterLockSlim PlayerLock = new ReaderWriterLockSlim();
         public static ReaderWriterLockSlim BuyListLock = new ReaderWriterLockSlim();
         public static ReaderWriterLockSlim MyBuffsListLock = new ReaderWriterLockSlim();
+        public static ReaderWriterLockSlim MyselfLock = new ReaderWriterLockSlim();
 
         public static ReaderWriterLockSlim PartyLock = new ReaderWriterLockSlim();
         public static ReaderWriterLockSlim BuffsGivenLock = new ReaderWriterLockSlim();

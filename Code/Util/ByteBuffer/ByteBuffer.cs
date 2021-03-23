@@ -7,7 +7,7 @@ namespace L2Robot
     public class ByteBuffer
     {
         private const int MAX_LENGTH = 1024;
-        private byte[] _data;
+        public byte[] _data;
         private int _length;
         private int _maxlength;
         private int _index;

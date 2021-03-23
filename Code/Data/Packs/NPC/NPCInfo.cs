@@ -562,7 +562,7 @@ namespace L2Robot
             showName = buff.ReadByte();             // 01
             if (isTargetable == 0 || showName == 0)
             {
-                GameData.badmobs_ignored += 1;
+                //GameData.badmobs_ignored += 1;
             }
             ExtendedEffects = buff.ReadUInt32();    // 00 00 00 00
             buff.ReadInt32();                       // roacknow

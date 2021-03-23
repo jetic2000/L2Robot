@@ -9,12 +9,16 @@ using System.Collections.Generic;
 namespace L2Robot
 {
     class LoginServer
-    {
-        public static void IG_Init()
+    {public static void IG_Init()
         {
             //In loop for new instance
-            Thread IGListener = new Thread(new ThreadStart(IG_Listener));
-            IGListener.Start();
+            Globals.PATH = Environment.CurrentDirectory;
+            //LoadData.LoadDataFiles();
+            //Globals.l2net_home.UpdateLog("AAAA");
+
+            Globals.IGListener = new Thread(new ThreadStart(IG_Listener));
+            Globals.running = true;
+            Globals.IGListener.Start();
         }
 
         public static void IG_Listener()
@@ -33,21 +37,25 @@ namespace L2Robot
             // GameData g2 = new GameData();
             // g1.Mixer = new MixedPackets(g2, 0x12121212);
 
-            while(true)
+            while(Globals.running)
             {
+                GameData gamedata = new GameData();
+                Globals.waitingGameData = gamedata;
                 Console.WriteLine("Waiting a client");
-                GameData gamedata = IG_Start_Listen(Game_ClientLink);
-                Console.WriteLine("Found a client");
-                
-                IG_ProcData(gamedata);
+                if (IG_Start_Listen(gamedata, Game_ClientLink))
+                {
+                    Console.WriteLine("Found a client");
+                    IG_ProcData(gamedata);
+                }
             }
         }
 
-        public static GameData IG_Start_Listen(TcpListener listener)
+        public static bool IG_Start_Listen(GameData gamedata, TcpListener listener)
         {
             string ip = "";
             int port = -1;
-            GameData gamedata = new GameData();
+            //GameData gamedata = new GameData();
+            //gamedata.Game_ClientLink = listener;
             gamedata.Override_Game_IP = "121.51.218.57";
             gamedata.Override_Game_Port = 7777;
             gamedata.Chron = Chronicle.CT4_0;
@@ -58,9 +66,8 @@ namespace L2Robot
             {
                 //Only need one instance as all data is from the some port from client by sock5
                 bool got_connection = false;
-                while (!got_connection)
+                while ((!got_connection))
                 {
-
                     try
                     {
                         gamedata.Game_ClientSocket = listener.AcceptSocket();
@@ -78,6 +85,7 @@ namespace L2Robot
 
                         Console.WriteLine("IP:{0}, PORT:{1}", ip, port);
 
+                        Globals.InstancesLock.EnterWriteLock();
                         if (Globals.Games.ContainsKey(port))
                         {
                             Globals.Games[port] = gamedata;
@@ -86,12 +94,15 @@ namespace L2Robot
                         {
                             Globals.Games.Add(port, gamedata);
                         }
+                        Globals.InstancesLock.ExitWriteLock();
+
                         got_connection = true;
                         Globals.l2net_home.timer_instances.Start();
                     }
                     catch
                     {
                         //TODO: Handle fail things
+                        return false;
                     }
                 }
             }
@@ -99,7 +110,7 @@ namespace L2Robot
             {
                 //TODO: Handle fail things
             }
-            return gamedata;
+            return true;
         }
 
         public static void IG_ProcData(object arg)
@@ -117,6 +128,7 @@ namespace L2Robot
                 bool temp_proxy_var = true;
                 while (temp_proxy_var)
                 {
+
                     cnt = gamedata.Game_ClientSocket.Receive(buffread, 0, Globals.BUFFER_PACKET, SocketFlags.None);
                     if (buffread.Length > 0)
                     {

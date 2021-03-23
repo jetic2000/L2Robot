@@ -69,13 +69,13 @@ namespace L2Robot
                     {
                         last_alert = DateTime.Now;
                     }
-
+#endif
                     if ((DateTime.Now - last_clean).Ticks > Globals.CLEAN_TIMER)
                     {
-                        //CleanUp();
+                        CleanUp(this.gamedata);
                         last_clean = DateTime.Now;
                     }
-#endif
+
                 }//end of while running
             }
             catch (Exception e)

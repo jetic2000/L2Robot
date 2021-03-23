@@ -74,11 +74,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Code\Crypting\AES.cs" />
     <Compile Include="Code\Crypting\Crypt.cs" />
     <Compile Include="Code\Crypting\MixedPackets.cs" />
     <Compile Include="Code\Crypting\NewCrypt.cs" />
     <Compile Include="Code\Data\GameData.cs" />
     <Compile Include="Code\Data\Globals.cs" />
+    <Compile Include="Code\Data\LoadData.cs" />
     <Compile Include="Code\Data\Packs\NPC\NPCInfo.cs" />
     <Compile Include="Code\Data\Packs\Object_Base.cs" />
     <Compile Include="Code\Data\Packs\Other Players\CharInfo.cs" />
@@ -100,6 +102,7 @@
     <Compile Include="Code\Data\Packs\Text\ZoneName.cs" />
     <Compile Include="Code\Logic\GameServer.cs" />
     <Compile Include="Code\Logic\GameServer\GameServer_HandlePackets.cs" />
+    <Compile Include="Code\Logic\GameServer_CleanUp.cs" />
     <Compile Include="Code\Network\Packets\ClientPackets.cs" />
     <Compile Include="Code\Network\Packets\ServerPackets.cs" />
     <Compile Include="Code\Scripting\ELIZA\ELIZA.cs" />

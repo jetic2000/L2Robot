@@ -39,7 +39,11 @@ namespace L2Robot
 
     public static class Globals
     {
+        public static Thread IGListener;
+        public static GameData waitingGameData;
+        public static bool running;
         public static FormMain l2net_home;
+        public static string Script_File;
 
         //1234567890123456
         public const string AES_Key = "#V^yw45?YLV$5wYa";
@@ -60,6 +64,8 @@ namespace L2Robot
 
         public static Dictionary<int, GameData> Games = new Dictionary<int, GameData>();
 
+        public static List<GameData> Dirty_Games = new List<GameData>();
+
 
         //public static System.Threading.Thread GG_sendthread;
 
@@ -78,84 +84,9 @@ namespace L2Robot
         //anti-assist/skills when picking up
         public static bool picking_up_items = false;
 
-        //public static DX_Keyboard Keyboard;
-
-        public static StreamWriter text_out;
-
-#if false
-        public static Login login_window;
-        public static Map map_window;
-        public static BotOptionsScreen botoptionsscreen;
-        public static Overlay overlaywindow;
-        public static ShortCutBar shortcutwindow;
-        public static Setup setupwindow;
-        public static ScriptDebugger scriptdebugwindow;
-        public static ActionWindow actionwindow;
-        public static TradeWindow tradewindow;
-        public static PrivateStoreSellWindow privatestoresellwindow;
-        public static TargetInfoScreen targetinfoscreen;
-        public static PetWindow petwindow;
-        public static PetWindowGive petwindowgive;
-        public static PetWindowTake petwindowtake;
-        public static Captcha captchawindow;
-        public static GameGuardServer ggwindow;
-        public static GameGuardClient ggclientwindow;
-
-        public static ExtendedActionWindow extendedactionwindow;
-        public static MailboxWindow mailboxwindow;
-
-#endif
-        public static bool enterworld_check = false;
-
-        //used to know if we are in the gameserver yet
-        public static bool enterworld_sent = false;
-
-        public static string enterworld_custom = "";
-        //adifenix(obce)
-        public static bool pre_unknow_blowfish = false;
-        public static bool pre_proxy_serv = false;
-        public static string pre_game_srv_listen_prt = "";
-
-        public static bool unknow_blowfish = false;
-        public static string game_srv_listen_prt = "";
-
-        public static bool pre_enterworld_ip = false;
-        public static string[] pre_enterworld_ip_tab = new string[20];
-        public static bool enterworld_ip = false;
-        public static bool proxy_serv = false; // work as proxy server -blowfishless method
         public static byte[] proxy_serv_ip = new byte[4]; // ip from proxy serv
         public static byte[] proxy_serv_port = new byte[2]; // port from proxy server
-        public static ArrayList ew_con_array = new ArrayList();
-        public static ArrayList ew_chc_ed_array = new ArrayList();
-        // packet window stuff ...------------------------------------------------
-        //public static pck_window_thr pck_thread = new pck_window_thr();
-        //--------------------------------------------------------------------------
-        public static bool Send_Blank_GG = false;
-        public static bool Hide_Message_Boxes = false;
 
-        public static string DirectInputKey = "-none-";
-        public static bool DirectInputLast = false;
-        public static bool DirectInputSetup = false;
-        public static string DirectInputSetupValue = "";
-
-        public static string DirectInputKey2 = "-none-";
-        public static bool DirectInputLast2 = false;
-        public static bool DirectInputSetup2 = false;
-        public static string DirectInputSetupValue2 = "";
-
-        public static bool DownloadNewCrests = false;
-        public static bool SocialNpcs = false;
-        public static bool NpcSay = false;
-        public static bool SocialSelf = false;
-        public static bool SocialPcs = false;
-        public static bool ShowNamesNpcs = true;
-        public static bool ShowNamesPcs = true;
-        public static bool ShowNamesItems = true;
-        public static bool IgnoreExitConf = false;
-        public static bool ToggleBottingifGMAction = false;
-        public static bool ToggleBottingifTeleported = false;
-
-        public static string Script_MainFile = "";
         public static bool Script_Debugging = false;
         public const long Script_Ticks_Per_Switch = TimeSpan.TicksPerMillisecond * 1;
         public static string BotOptionsFile = "";
@@ -290,7 +221,7 @@ namespace L2Robot
         public const double SKILL_INIT_REUSE = 2000;
 
         //real npc removal seems to be at 2048... or at least that is when we stop getting delete item packets for npcs
-        public const int REMOVE_RANGE = 4000;
+        public const int REMOVE_RANGE = 30000;
         public const int REMOVE_RANGE_INNER = 2048;
         //3584 loses shit...
         //3840 loses shit...
@@ -380,6 +311,7 @@ namespace L2Robot
         public static bool CanPrint = false;
         public static bool Got_Skills = false;
 
+        public static ReaderWriterLockSlim ScriptFileLock = new ReaderWriterLockSlim();
         public static ReaderWriterLockSlim InstancesLock = new ReaderWriterLockSlim();
         public static ReaderWriterLockSlim NPCLock = new ReaderWriterLockSlim();
         public static ReaderWriterLockSlim InventoryLock = new ReaderWriterLockSlim();
@@ -388,6 +320,7 @@ namespace L2Robot
         public static ReaderWriterLockSlim PlayerLock = new ReaderWriterLockSlim();
         public static ReaderWriterLockSlim BuyListLock = new ReaderWriterLockSlim();
         public static ReaderWriterLockSlim MyBuffsListLock = new ReaderWriterLockSlim();
+        public static ReaderWriterLockSlim MyselfLock = new ReaderWriterLockSlim();
 
         public static ReaderWriterLockSlim PartyLock = new ReaderWriterLockSlim();
         public static ReaderWriterLockSlim BuffsGivenLock = new ReaderWriterLockSlim();
@@ -410,6 +343,8 @@ namespace L2Robot
         public static ReaderWriterLockSlim GameReadQueueLock = new ReaderWriterLockSlim();
 
         public static ReaderWriterLockSlim ChatLock = new ReaderWriterLockSlim();
+
+        public static ReaderWriterLockSlim LogLock = new ReaderWriterLockSlim();
 
         //only for debugging
 #if false

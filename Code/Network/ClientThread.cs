@@ -34,11 +34,15 @@ namespace L2Robot
 
         public void network_exception()
         {
-            // if (Globals.dc_on_ig_close)
-            // {
-            //     //Globals.l2net_home.Add_Error("Terminating all connections as due to break in client connection");
-            //     Util.Stop_Connections();
-            // }
+            Globals.InstancesLock.EnterWriteLock();
+            if (Globals.Games.ContainsKey(this.gamedata.Client_Port))
+            {
+                Globals.Games.Remove(this.gamedata.Client_Port);
+                Globals.l2net_home.timer_instances.Start();
+                Globals.Dirty_Games.Add(this.gamedata);
+            }
+            Globals.InstancesLock.ExitWriteLock();
+            Globals.l2net_home.timer_instances.Start();
         }
 
         private void ClientSendThread()
@@ -51,7 +55,7 @@ namespace L2Robot
 
             try
             {
-                while (true)
+                while (this.gamedata.running)
                 {
                     while (this.gamedata.GetCount_DataToClient() > 0)
                     {
@@ -101,21 +105,66 @@ namespace L2Robot
             int cnt = 0;
             int size = 0;
             bool forward = true;
+            int recv_len = 0;
 
             ByteBuffer bbuffer0;
             try
             {
                 while (this.gamedata.running)
                 {
-                    cnt += this.gamedata.Game_ClientSocket.Receive(buffread, cnt, Globals.BUFFER_PACKET - cnt, SocketFlags.None);
-                    size = BitConverter.ToUInt16(buffread, 0);
+                    if (this.gamedata.Game_ClientSocket.Poll(-1, SelectMode.SelectRead))
+                    {
+                        try
+                        {
+                            recv_len = this.gamedata.Game_ClientSocket.Receive(buffread, cnt, Globals.BUFFER_PACKET - cnt, SocketFlags.None);
+                            if (recv_len == 0)
+                            {
+                                Console.WriteLine("Client disconnected");
+                                network_exception();
+                                return;
+                            }
+                            else
+                            {
+                                cnt += recv_len;
+                                size = BitConverter.ToUInt16(buffread, 0);
+                            }
+                        }
+                        catch
+                        {
+                                Console.WriteLine("Client disconnected Error");
+                                network_exception();
+                                return;
+                        }
+                    }
 
                     while (cnt >= size && cnt > 2)
                     {
                         //if we got partial shit we cant use, read some more until it is full
                         while (size > cnt)
                         {
-                            cnt += this.gamedata.Game_ClientSocket.Receive(buffread, cnt, Globals.BUFFER_PACKET - cnt, SocketFlags.None);          
+                            if (this.gamedata.Game_ClientSocket.Poll(-1, SelectMode.SelectRead))
+                            {
+                                try
+                                {
+                                    recv_len = this.gamedata.Game_ClientSocket.Receive(buffread, cnt, Globals.BUFFER_PACKET - cnt, SocketFlags.None);
+                                    if (recv_len == 0)
+                                    {
+                                        Console.WriteLine("Client disconnected");
+                                        network_exception();
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        cnt += recv_len;
+                                    }
+                                }
+                                catch
+                                {
+                                    Console.WriteLine("Client disconnected Error");
+                                    network_exception();
+                                    return;
+                                }
+                            }                                       
                         }
 
                         buffpacketin = new byte[size - 2];
@@ -218,7 +267,7 @@ namespace L2Robot
                                     }
                                     break;
                                 case PClient.NetPingReply:
-                                    Console.WriteLine("++Hold Client for NetPingReply");
+                                    //Console.WriteLine("++Hold Client for NetPingReply");
                                     forward = true;
                                     break;
                             }
@@ -242,6 +291,7 @@ namespace L2Robot
             {
                 //Globals.l2net_home.Add_Error("crash: ClientReadThread : " + e.Message);
                 network_exception();
+                return;
             }
         }//end of read data
     }//end of clientsendthread

@@ -58,7 +58,7 @@ namespace L2Robot
             ByteBuffer bbuffer0;
             try
             {
-                while (true)
+                while (this.gamedata.running)
                 {
                     while (this.gamedata.GetCount_DataToServer() > 0)
                     {
@@ -120,7 +120,7 @@ namespace L2Robot
 
             try
             {
-                while (true)
+                while (this.gamedata.running)
                 {
                     cnt += this.gamedata.Game_GameSocket.Receive(buffread, cnt, Globals.BUFFER_PACKET - cnt, SocketFlags.None);
                     size = BitConverter.ToUInt16(buffread, 0);
@@ -256,7 +256,7 @@ namespace L2Robot
                             }
                             if (forward)
                             {
-                                Console.WriteLine("[S]:" + BitConverter.ToString(buffpacket, 0).Replace("-", string.Empty).ToLower());
+                                //Console.WriteLine("[S]:" + BitConverter.ToString(buffpacket, 0).Replace("-", string.Empty).ToLower());
                                 //bbuffer0 = new ByteBuffer(buffpacket);
                                 this.gamedata.SendToClient(bbuffer0);
                             }

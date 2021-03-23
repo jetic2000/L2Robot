@@ -99,6 +99,7 @@ namespace L2Robot
                 }
                 
                 bbuff.WriteUInt16(0x0);
+                Console.WriteLine("Send To Server CLIENT_PORT: {0}", gamedata.Client_Port);
                 gamedata.SendToGameServer(bbuff);
             }
             else
@@ -108,6 +109,7 @@ namespace L2Robot
                 bbuff.WriteUInt16((UInt16)PClientEX.RequestTeleport);
                 //bbuff.WriteByte(0x67);
                 //bbuff.WriteByte(0x01);
+                /*
                 if (dest == "奇岩")
                     bbuff.WriteUInt32(0x19);
                 else if (dest == "矿区西部")
@@ -118,7 +120,10 @@ namespace L2Robot
                     bbuff.WriteUInt32(0x62);
                 else
                     bbuff.WriteUInt32(0x19);
-
+                */
+                bbuff.WriteUInt32(Convert.ToUInt32(dest, 16));
+                
+                Console.WriteLine("Send To Server CLIENT_PORT: {0}, dest:{1}", gamedata.Client_Port, dest);
                 gamedata.SendToGameServer(bbuff);
             }
 

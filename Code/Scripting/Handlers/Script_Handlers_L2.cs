@@ -345,8 +345,162 @@ namespace L2Robot
         
         private void Script_RESTART()
         {
-            ClientPackets.Send_Restart(this.gamedata);
+            this.gamedata.Game_GameSocket.Close();
+            //ClientPackets.Send_Restart(this.gamedata);
         }
+
+        private void Script_GET_MYSELF(string inp)
+        {
+            string sdest = Get_String(ref inp);
+            ScriptVariable dest = Get_Var(sdest);
+
+            if (dest.Type == Var_Types.ARRAYLIST)
+            {
+                ((ArrayList)dest.Value).Clear();
+            }
+            else
+            {
+                Script_Error("INVLAID DESTINATION TYPE");
+                return;
+            }
+
+            Globals.MyselfLock.EnterReadLock();
+            try
+            {
+                Script_ClassData cd = new Script_ClassData();
+                cd.Name = "MYSELF";
+                cd._Variables.Add("ID", new ScriptVariable((long)this.gamedata.my_char.ID, "ID", Var_Types.INT, Var_State.PUBLIC));
+                cd._Variables.Add("X", new ScriptVariable((long)this.gamedata.my_char.X, "X", Var_Types.INT, Var_State.PUBLIC));
+                cd._Variables.Add("Y", new ScriptVariable((long)this.gamedata.my_char.Y, "Y", Var_Types.INT, Var_State.PUBLIC));
+                cd._Variables.Add("Z", new ScriptVariable((long)this.gamedata.my_char.Z, "Z", Var_Types.INT, Var_State.PUBLIC));
+                cd._Variables.Add("NAME", new ScriptVariable(this.gamedata.my_char.Name, "NAME", Var_Types.STRING, Var_State.PUBLIC));
+                ScriptVariable sv = new ScriptVariable(cd, "MYSELF", Var_Types.CLASS, Var_State.PUBLIC);
+
+                if (dest.Type == Var_Types.ARRAYLIST)
+                {
+                    ((ArrayList)dest.Value).Add(sv);
+                }
+            }
+            finally
+            {
+                Globals.MyselfLock.ExitReadLock();
+            }
+        }
+
+        private void Script_GET_PLAYERS(string inp)
+        {
+            string sdest = Get_String(ref inp);
+            ScriptVariable dest = Get_Var(sdest);
+
+            if (dest.Type == Var_Types.ARRAYLIST)
+            {
+                ((ArrayList)dest.Value).Clear();
+            }
+            else if (dest.Type == Var_Types.SORTEDLIST)
+            {
+                ((SortedList)dest.Value).Clear();
+            }
+            else
+            {
+                Script_Error("INVLAID DESTINATION TYPE");
+                return;
+            }
+
+            Globals.PlayerLock.EnterReadLock();
+            try
+            {
+                foreach (CharInfo ch in this.gamedata.nearby_chars.Values)
+                {
+                    Script_ClassData cd = new Script_ClassData();
+                    cd.Name = "PLAYER";
+                    cd._Variables.Add("ID", new ScriptVariable((long)ch.ID, "ID", Var_Types.INT, Var_State.PUBLIC));
+                    cd._Variables.Add("X", new ScriptVariable((long)ch.X, "X", Var_Types.INT, Var_State.PUBLIC));
+                    cd._Variables.Add("Y", new ScriptVariable((long)ch.Y, "Y", Var_Types.INT, Var_State.PUBLIC));
+                    cd._Variables.Add("Z", new ScriptVariable((long)ch.Z, "Z", Var_Types.INT, Var_State.PUBLIC));
+                    cd._Variables.Add("NAME", new ScriptVariable(ch.Name, "NAME", Var_Types.STRING, Var_State.PUBLIC));
+
+                    // cd._Variables.Add("TITLE", new ScriptVariable(ch.Title, "TITLE", Var_Types.STRING, Var_State.PUBLIC));
+                    // cd._Variables.Add("CLAN", new ScriptVariable((long)ch.ClanID, "CLAN", Var_Types.INT, Var_State.PUBLIC));
+                    // cd._Variables.Add("ALLY", new ScriptVariable((long)ch.AllyID, "ALLY", Var_Types.INT, Var_State.PUBLIC));
+
+                    // cd._Variables.Add("RACE", new ScriptVariable((long)ch.Race, "RACE", Var_Types.INT, Var_State.PUBLIC));
+                    // cd._Variables.Add("SEX", new ScriptVariable((long)ch.Sex, "SEX", Var_Types.INT, Var_State.PUBLIC));
+                    // cd._Variables.Add("CLASS", new ScriptVariable((long)ch.Class, "CLASS", Var_Types.INT, Var_State.PUBLIC));
+                    // cd._Variables.Add("LEVEL", new ScriptVariable((long)ch.Level, "LEVEL", Var_Types.INT, Var_State.PUBLIC));
+
+                    // cd._Variables.Add("HP", new ScriptVariable((long)ch.Cur_HP, "HP", Var_Types.INT, Var_State.PUBLIC));
+                    // cd._Variables.Add("MAX_HP", new ScriptVariable((long)ch.Max_HP, "MAX_HP", Var_Types.INT, Var_State.PUBLIC));
+                    // cd._Variables.Add("MP", new ScriptVariable((long)ch.Cur_MP, "MP", Var_Types.INT, Var_State.PUBLIC));
+                    // cd._Variables.Add("MAX_MP", new ScriptVariable((long)ch.Max_MP, "MAX_MP", Var_Types.INT, Var_State.PUBLIC));
+                    // cd._Variables.Add("CP", new ScriptVariable((long)ch.Cur_CP, "CP", Var_Types.INT, Var_State.PUBLIC));
+                    // cd._Variables.Add("MAX_CP", new ScriptVariable((long)ch.Max_CP, "MAX_CP", Var_Types.INT, Var_State.PUBLIC));
+
+                    // cd._Variables.Add("PER_HP", new ScriptVariable(Math.Round(ch.Cur_HP / (double)ch.Max_HP * 100, 2), "PER_HP", Var_Types.DOUBLE, Var_State.PUBLIC));
+                    // cd._Variables.Add("PER_MP", new ScriptVariable(Math.Round(ch.Cur_MP / (double)ch.Max_MP * 100, 2), "PER_MP", Var_Types.DOUBLE, Var_State.PUBLIC));
+                    // cd._Variables.Add("PER_CP", new ScriptVariable(Math.Round(ch.Cur_CP / (double)ch.Max_CP * 100, 2), "PER_CP", Var_Types.DOUBLE, Var_State.PUBLIC));
+
+                    // cd._Variables.Add("PVPFLAG", new ScriptVariable((long)ch.PvPFlag, "PVPFLAG", Var_Types.INT, Var_State.PUBLIC));
+                    // cd._Variables.Add("KARMA", new ScriptVariable((long)ch.Karma, "KARMA", Var_Types.INT, Var_State.PUBLIC));
+
+                    // cd._Variables.Add("ATTACK_SPEED", new ScriptVariable((long)(ch.PatkSpeed * ch.AttackSpeedMult), "ATTACK_SPEED", Var_Types.INT, Var_State.PUBLIC));
+                    // cd._Variables.Add("CAST_SPEED", new ScriptVariable((long)ch.MatkSpeed, "CAST_SPEED", Var_Types.INT, Var_State.PUBLIC));
+                    // cd._Variables.Add("RUN_SPEED", new ScriptVariable((long)(ch.RunSpeed * ch.MoveSpeedMult), "RUN_SPEED", Var_Types.INT, Var_State.PUBLIC));
+
+                    // cd._Variables.Add("TARGET_ID", new ScriptVariable((long)ch.TargetID, "TARGET_ID", Var_Types.INT, Var_State.PUBLIC));
+                    // cd._Variables.Add("FOLLOW_TARGET_ID", new ScriptVariable((long)ch.MoveTarget, "FOLLOW_TARGET_ID", Var_Types.INT, Var_State.PUBLIC));
+
+                    // cd._Variables.Add("DEST_X", new ScriptVariable((long)ch.Dest_X, "DEST_X", Var_Types.INT, Var_State.PUBLIC));
+                    // cd._Variables.Add("DEST_Y", new ScriptVariable((long)ch.Dest_Y, "DEST_Y", Var_Types.INT, Var_State.PUBLIC));
+                    // cd._Variables.Add("DEST_Z", new ScriptVariable((long)ch.Dest_Z, "DEST_Z", Var_Types.INT, Var_State.PUBLIC));
+
+                    // cd._Variables.Add("LOOKS_DEAD", new ScriptVariable((long)ch.isAlikeDead, "LOOKS_DEAD", Var_Types.INT, Var_State.PUBLIC));
+                    // cd._Variables.Add("IN_COMBAT", new ScriptVariable((long)ch.isInCombat, "IN_COMBAT", Var_Types.INT, Var_State.PUBLIC));
+
+                    ScriptVariable sv = new ScriptVariable(cd, "PLAYER", Var_Types.CLASS, Var_State.PUBLIC);
+
+                    if (dest.Type == Var_Types.ARRAYLIST)
+                    {
+                        ((ArrayList)dest.Value).Add(sv);
+                    }
+                    else if (dest.Type == Var_Types.SORTEDLIST)
+                    {
+                        ((SortedList)dest.Value).Add(ch.ID.ToString(), sv);
+                    }
+                }
+            }
+            finally
+            {
+                Globals.PlayerLock.ExitReadLock();
+            }
+        }
+
+        private void Script_INJECT(string line)
+        {
+            string hex = Get_String(ref line);
+
+            ByteBuffer send = new ByteBuffer();
+
+            hex = hex.Replace(" ", "");
+            string sm;
+
+            for (int i = 0; i < hex.Length; i += 2)
+            {
+                //make the buffer larger if we need to
+                if (i / 2 >= send.Length())
+                {
+                    send.Resize(send.Length() * 2);
+                }
+
+                sm = hex[i].ToString() + hex[i + 1].ToString();
+
+                send.WriteByte(byte.Parse(sm, System.Globalization.NumberStyles.HexNumber));
+            }
+
+            send.TrimToIndex();
+
+            this.gamedata.SendToGameServerInject(send);
+        }
+
 
         private void Script_GET_NPCS(string inp)
         {

@@ -54,15 +54,18 @@ namespace L2Robot
                     switch ((PServer)b0)
                     {
                         case PServer.MTL:
-                            //ClientPackets.MoveToLocation(buffe);
+                            ServerPackets.MoveToLocation(this.gamedata, buffe);
                             break;
                         case PServer.CI:
                             //Console.WriteLine("[S]:PServer.CI");
                             //ServerPackets.CharInfo(this.gamedata, buffe);
                             break;
                         case PServer.UI:
-                            //Console.WriteLine("[S]:PServer.UI");
-                            //ServerPackets.UserInfo(this.gamedata, buffe);
+                            Console.WriteLine("[S]:PServer.UI");
+                            ServerPackets.UserInfo(this.gamedata, buffe);
+                            break;
+                        case PServer.StopMove:
+                            ServerPackets.StopMove(this.gamedata, buffe);
                             break;
                         case PServer.Attack:
                             //ClientPackets.Attack_Packet(buffe);
@@ -77,6 +80,9 @@ namespace L2Robot
                         case PServer.StatusUpdate:
                             //Console.WriteLine("[S]:PServer.StatusUpdate");
                             //ServerPackets.StatusUpdate(this.gamedata, buffe);
+                            break;
+                        case PServer.TeleportToLocation:
+                            ServerPackets.Teleport(this.gamedata, buffe);
                             break;
                         case PServer.DeleteObject:
                             ServerPackets.DeleteItem(this.gamedata, buffe);
