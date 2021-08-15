@@ -56,8 +56,8 @@ namespace L2Robot
             int port = -1;
             //GameData gamedata = new GameData();
             //gamedata.Game_ClientLink = listener;
-            gamedata.Override_Game_IP = "121.51.218.57";
-            gamedata.Override_Game_Port = 7777;
+            gamedata.Override_Game_IP = "180.102.96.21";
+            gamedata.Override_Game_Port = 10091;
             gamedata.Chron = Chronicle.CT4_0;
             //Globals.Games.Add(1000, gamedata);
             //Globals.l2net_home.timer_instances.Start();
