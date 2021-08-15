@@ -183,6 +183,14 @@ namespace L2Robot
                             this.gamedata.Mixer.Decrypt0(buffpacket);
                         }
 
+                        {
+                            string h = String.Format("[ME] {0}",
+                                BitConverter.ToString(buffpacket, 0).Replace("-", string.Empty).ToLower());
+                            //Console.WriteLine(h);
+                            Globals.l2net_home.UpdateLog(h);
+                        }
+
+
                         Console.WriteLine("[C]:" + BitConverter.ToString(buffpacket, 0).Replace("-", string.Empty).ToLower());
 
                         //shift the data over by size for next loop
