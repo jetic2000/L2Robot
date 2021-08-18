@@ -160,25 +160,6 @@ namespace L2Robot
                             bbuffer0 = new ByteBuffer(buffpacket);
                             bbuffer1 = new ByteBuffer(buffpacket);
                             
-                            //TODO: Must ensure script running after IG login
-                            if (this.gamedata.CurrentScriptState == ScriptState.Running)
-                            {
-                                if ((PServer)buffpacket[0] == PServer.EXPacket)
-                                {
-                                    if (this.gamedata.scriptthread.Blocked_ServerPacketsEX.ContainsKey(Convert.ToInt32(buffpacket[1] + buffpacket[2] << 8)))
-                                    {
-                                        forward = false;
-                                    }
-                                }
-                                else
-                                {
-                                    if (this.gamedata.scriptthread.Blocked_ServerPackets.ContainsKey(Convert.ToInt32(buffpacket[0])))
-                                    {
-                                        forward = false;
-                                    }
-                                }
-                            }
-
                             switch ((PServer)buffpacket[0])
                             {
                                 case PServer.VersionCheck:

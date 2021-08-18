@@ -2,23 +2,182 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Net.Sockets;
+using System.Net.NetworkInformation;
 using System.Threading;
+using System.Diagnostics;
+using System.Net;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
 
 namespace L2Robot
 {
     class LoginServer
-    {public static void IG_Init()
+    {
+        public enum TCP_TABLE_CLASS : int
+        {
+            TCP_TABLE_BASIC_LISTENER,
+            TCP_TABLE_BASIC_CONNECTIONS,
+            TCP_TABLE_BASIC_ALL,
+            TCP_TABLE_OWNER_PID_LISTENER,
+            TCP_TABLE_OWNER_PID_CONNECTIONS,
+            TCP_TABLE_OWNER_PID_ALL,
+            TCP_TABLE_OWNER_MODULE_LISTENER,
+            TCP_TABLE_OWNER_MODULE_CONNECTIONS,
+            TCP_TABLE_OWNER_MODULE_ALL
+        } 
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MIB_TCPROW_OWNER_PID
+        {
+            public uint state;
+            public uint localAddr;
+            public byte localPort1;
+            public byte localPort2;
+            public byte localPort3;
+            public byte localPort4;
+            public uint remoteAddr;
+            public byte remotePort1;
+            public byte remotePort2;
+            public byte remotePort3;
+            public byte remotePort4;
+            public int owningPid;
+
+            public ushort LocalPort
+            {
+                get
+                {
+                    return BitConverter.ToUInt16(
+                        new byte[2] { localPort2, localPort1}, 0);
+                }
+            }
+
+            public ushort RemotePort
+            {
+                get
+                {
+                    return BitConverter.ToUInt16(
+                        new byte[2] { remotePort2, remotePort1}, 0);
+                }
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MIB_TCPTABLE_OWNER_PID
+        {
+            public uint dwNumEntries;
+            MIB_TCPROW_OWNER_PID table;
+        }
+
+        public struct ProcessInfo
+        {
+            public int pid;
+            public uint remotePort;
+            public uint localPort;
+        }
+
+
+        [DllImport("iphlpapi.dll", SetLastError = true)]
+        private static extern uint GetExtendedTcpTable(IntPtr pTcpTable, ref int dwOutBufLen, bool sort, int ipVersion, TCP_TABLE_CLASS tblClass, uint reserved = 0);
+        public static void IG_Init()
         {
             //In loop for new instance
+            Console.WriteLine("IG_Init()");
             Globals.PATH = Environment.CurrentDirectory;
             //LoadData.LoadDataFiles();
             //Globals.l2net_home.UpdateLog("AAAA");
 
+            //Begin to Monitor L2.bin in process list
+            //SmartTimer timer_instances = new SmartTimer();
+            //timer_instances.Interval = 3000;
+            //timer_instances.OnTimerTick += Validate_Instances;
+            //timer_instances.Start();
+            //Get_L2_Ports();
+
             Globals.IGListener = new Thread(new ThreadStart(IG_Listener));
             Globals.running = true;
             Globals.IGListener.Start();
+        }
+
+
+        public static void Validate_Instances()
+        {
+            //Check if game process is running or not?
+            Globals.InstancesLock.EnterWriteLock();
+
+            Check_L2_Ports();
+
+            Globals.InstancesLock.ExitWriteLock();
+        }
+
+        public static void Check_L2_Ports()
+        {
+            try
+            {
+                int AF_INET = 2;    // IP_v4
+                int buffSize = 0;
+                MIB_TCPROW_OWNER_PID[] tTable;
+                List<ProcessInfo> ps = new List<ProcessInfo>();
+
+                uint ret = GetExtendedTcpTable(IntPtr.Zero, ref buffSize, true, AF_INET, TCP_TABLE_CLASS.TCP_TABLE_OWNER_PID_ALL, 0);
+                IntPtr buffTable = Marshal.AllocHGlobal(buffSize);
+                try
+                {
+                    ret = GetExtendedTcpTable(buffTable, ref buffSize, true, AF_INET, TCP_TABLE_CLASS.TCP_TABLE_OWNER_PID_ALL, 0);
+                    //Console.WriteLine(buffTable.ToString());
+                    MIB_TCPTABLE_OWNER_PID tab = (MIB_TCPTABLE_OWNER_PID)Marshal.PtrToStructure(buffTable, typeof(MIB_TCPTABLE_OWNER_PID));
+                    IntPtr rowPtr = (IntPtr)((long)buffTable + Marshal.SizeOf(tab.dwNumEntries));
+                    tTable = new MIB_TCPROW_OWNER_PID[tab.dwNumEntries];
+                    Console.WriteLine("Get TCP Table");
+                    for (int i = 0; i < tab.dwNumEntries; i++)
+                    {
+                        MIB_TCPROW_OWNER_PID tcpRow = (MIB_TCPROW_OWNER_PID)Marshal.PtrToStructure(rowPtr, typeof(MIB_TCPROW_OWNER_PID));
+                        tTable[i] = tcpRow;
+                        // next entry
+                        rowPtr = (IntPtr)((long)rowPtr + Marshal.SizeOf(tcpRow));
+                        if (tTable[i].RemotePort == 10091)
+                        {
+                            Console.WriteLine("Game PID:{0}, Local Port:{1}", tTable[i].owningPid, tTable[i].LocalPort);
+                            ProcessInfo p = new ProcessInfo();
+                            p.remotePort = tTable[i].RemotePort;
+                            p.localPort = tTable[i].LocalPort;
+                            p.pid = tTable[i].owningPid;
+                            ps.Add(p);
+                        }
+                    }
+
+                    //Check if all Games Instance stil alive
+                    foreach (int index in Globals.Games.Keys)
+                    {
+                        bool result = false;
+                        Console.WriteLine("Globals.Games.Keys = {0}", Globals.Games[index].Client_Port);
+                        foreach (ProcessInfo i in ps)
+                        {
+                            if (Globals.Games[index].Client_Port == i.localPort)
+                            {
+                                result = true;
+                                Globals.Games[index].processPid = i.pid;
+                                break;
+                            }
+                        }
+
+                        if (result == false)
+                        {
+                            //Not found, dead instance
+                        }
+                    }
+
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(buffTable);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         public static void IG_Listener()
@@ -97,7 +256,7 @@ namespace L2Robot
                         Globals.InstancesLock.ExitWriteLock();
 
                         got_connection = true;
-                        Globals.l2net_home.timer_instances.Start();
+                        //Globals.l2net_home.timer_instances.Start();
                     }
                     catch
                     {
@@ -203,9 +362,11 @@ namespace L2Robot
                 
                 //Now start read/send client data
                 gamedata.clientthread = new ClientThread(gamedata);
+                gamedata.fishflythread = new FishFlyThread(gamedata);
                 gamedata.running = true;
                 gamedata.clientthread.readthread.Start();
                 gamedata.clientthread.sendthread.Start();
+                gamedata.fishflythread.FishFlyProc.Start();
             }
             catch
             {

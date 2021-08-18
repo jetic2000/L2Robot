@@ -38,11 +38,11 @@ namespace L2Robot
             if (Globals.Games.ContainsKey(this.gamedata.Client_Port))
             {
                 Globals.Games.Remove(this.gamedata.Client_Port);
-                Globals.l2net_home.timer_instances.Start();
-                Globals.Dirty_Games.Add(this.gamedata);
+                //Globals.l2net_home.timer_instances.Start();
+                //Globals.Dirty_Games.Add(this.gamedata);
             }
             Globals.InstancesLock.ExitWriteLock();
-            Globals.l2net_home.timer_instances.Start();
+            //Globals.l2net_home.timer_instances.Start();
         }
 
         private void ClientSendThread()
@@ -77,7 +77,7 @@ namespace L2Robot
                         buffe = new byte[2 + buff.Length];
                         b2 = BitConverter.GetBytes((short)buffe.Length);
                         buffe[0] = b2[0];
-                        buffe[1] = b2[1]; ;
+                        buffe[1] = b2[1];
                         buff.CopyTo(buffe, 2);
                         this.gamedata.Game_ClientSocket.Send(buffe);//,0,buffe.Length);
 
@@ -187,11 +187,11 @@ namespace L2Robot
                             string h = String.Format("[ME] {0}",
                                 BitConverter.ToString(buffpacket, 0).Replace("-", string.Empty).ToLower());
                             //Console.WriteLine(h);
-                            Globals.l2net_home.UpdateLog(h);
+                            //Globals.l2net_home.UpdateLog(h);
                         }
 
 
-                        Console.WriteLine("[C]:" + BitConverter.ToString(buffpacket, 0).Replace("-", string.Empty).ToLower());
+                        //Console.WriteLine("[C]:" + BitConverter.ToString(buffpacket, 0).Replace("-", string.Empty).ToLower());
 
                         //shift the data over by size for next loop
                         for (uint i = 0; i < cnt - size; i++)
@@ -204,47 +204,6 @@ namespace L2Robot
                         if (buffpacket.Length > 0)
                         {
                             forward = true;
-
-                            if (this.gamedata.CurrentScriptState == ScriptState.Running)
-                            {
-                                if ((PClient)buffpacket[0] == PClient.EXPacket)
-                                {
-                                    if (this.gamedata.scriptthread.Blocked_ClientPacketsEX.ContainsKey(Convert.ToInt32(buffpacket[1] + buffpacket[2] << 8)))
-                                    {
-                                        forward = false;
-                                    }
-
-                                    if (this.gamedata.scriptthread.ClientPacketsEXContainsKey(Convert.ToInt32(buffpacket[1] + buffpacket[2] << 8)))
-                                    {
-                                        ByteBuffer bb = new ByteBuffer(buffpacket);
-                                        ScriptEvent sc_ev = new ScriptEvent();
-                                        sc_ev.Type = EventType.ClientPacketEX;
-                                        sc_ev.Type2 = Convert.ToInt32(buffpacket[1] + buffpacket[2] << 8);
-                                        sc_ev.Variables.Add(new ScriptVariable(bb, "PACKET", Var_Types.BYTEBUFFER, Var_State.PUBLIC));
-                                        sc_ev.Variables.Add(new ScriptVariable(DateTime.Now.Ticks, "TIMESTAMP", Var_Types.INT, Var_State.PUBLIC));
-                                        this.gamedata.scriptthread.SendToEventQueue(sc_ev);
-                                    }
-                                }
-                                else
-                                {
-                                    if (this.gamedata.scriptthread.Blocked_ClientPackets.ContainsKey(Convert.ToInt32(buffpacket[0])))
-                                    {
-                                        forward = false;
-                                    }
-
-                                    if (this.gamedata.scriptthread.ClientPacketsContainsKey(Convert.ToInt32(buffpacket[0])))
-                                    {
-                                        ByteBuffer bb = new ByteBuffer(buffpacket);
-
-                                        ScriptEvent sc_ev = new ScriptEvent();
-                                        sc_ev.Type = EventType.ClientPacket;
-                                        sc_ev.Type2 = Convert.ToInt32(buffpacket[0]);
-                                        sc_ev.Variables.Add(new ScriptVariable(bb, "PACKET", Var_Types.BYTEBUFFER, Var_State.PUBLIC));
-                                        sc_ev.Variables.Add(new ScriptVariable(DateTime.Now.Ticks, "TIMESTAMP", Var_Types.INT, Var_State.PUBLIC));
-                                        this.gamedata.scriptthread.SendToEventQueue(sc_ev);
-                                    }
-                                }
-                            }
 
                             //Console.WriteLine("CMD ID FROM CLIENT: {0:X}", buffpacket[0]);
 
@@ -270,8 +229,6 @@ namespace L2Robot
                                         this.gamedata.gamethread.sendthread.Start();
                                         this.gamedata.gameprocessdatathread = new GameServer(this.gamedata);
                                         this.gamedata.gameprocessdatathread.processthread.Start();
-
-                                        this.gamedata.scriptthread = new ScriptEngine(this.gamedata);
                                     }
                                     break;
                                 case PClient.NetPingReply:

@@ -25,9 +25,13 @@ namespace L2Robot
             {
                 Thread.Sleep(InternalTick);
 
+                //Console.WriteLine(DateTime.Now);
+                //Console.WriteLine(LastFired.AddMilliseconds(Interval));
+
                 if (Fire && DateTime.Now > LastFired.AddMilliseconds(Interval))
                 {
                     OnTimerTick();
+                    LastFired = DateTime.Now;
                 }
 
                 /*lock (TimerLock)

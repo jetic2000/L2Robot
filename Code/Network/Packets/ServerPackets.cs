@@ -1,6 +1,9 @@
 using System.Globalization;
 using System;
 using System.Threading;
+using System.Text;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace L2Robot
 {
@@ -18,6 +21,7 @@ namespace L2Robot
         public static void EXUserInfo(GameData gamedata, ByteBuffer buffe)
         {
             CharInfo player = new CharInfo();
+            Globals.PlayerLock.EnterWriteLock();
             player.Load(buffe);
             if (player.Name == "")
             {
@@ -26,22 +30,25 @@ namespace L2Robot
             else
             {
                 {
-                    string h = String.Format("[Player] {0}[0x{1:x}] ({2},{3},{4})", 
-                        player.Name, player.ID, player.X, player.Y, player.Z);
-                    //Console.WriteLine(h);
-                    Globals.l2net_home.UpdateLog(h);
+                    PlayerMsg msg = new PlayerMsg();
+                    msg.PlayerName = player.Name;
+                    msg.PlayerID = player.ID;
+                    msg.msg = String.Format("[Player] {0}[0x{1:x}] ({2},{3},{4})", 
+                        player.Name, player.ID, player.Current_Pos.X, player.Current_Pos.Y, player.Current_Pos.Z);
+                    Globals.l2net_home.UpdateLog(msg);
                 }
 
                 AddInfo.Add_CharInfo(gamedata, player);
                 //Console.WriteLine("Num of near char : {0}", gamedata.nearby_chars.Count);
             }
+            Globals.PlayerLock.ExitWriteLock();
         }
 
         public static void ExSetCompassZoneCode(GameData gamedata, ByteBuffer buff)
         {
             uint type = buff.ReadUInt32();//
             gamedata.cur_zone = type;
-            //Console.WriteLine("Cur_Zone: {0}", gamedata.cur_zone);
+            Console.WriteLine("---ExSetCompassZoneCode: 0x{0:x}", gamedata.cur_zone);
         }
 
 
@@ -53,75 +60,12 @@ namespace L2Robot
         public static void DeleteItem(GameData gamedata, ByteBuffer buffe)
         {
             uint dead_object = buffe.ReadUInt32();//System.BitConverter.ToInt32(buffe,1);
-            //buffe.ReadUInt32();
-            //4 bytes of poop after the objid
-            
-            /* Add back later: Jack
-            if (gamedata.my_char.MoveTarget == dead_object)
-            {
-                gamedata.my_char.Moving = false;
-                gamedata.my_char.MoveTarget = 0;
-                gamedata.my_char.MoveTargetType = TargetType.NONE;
-                gamedata.my_char.Dest_X = gamedata.my_char.X;
-                gamedata.my_char.Dest_Y = gamedata.my_char.Y;
-                gamedata.my_char.Dest_Z = gamedata.my_char.Z;
-            }
-
-            Globals.PlayerLock.EnterReadLock();
-            try
-            {
-                foreach (CharInfo player in gamedata.nearby_chars.Values)
-                {
-                    if (player.MoveTarget == dead_object)
-                    {
-                        player.Moving = false;
-                        player.MoveTarget = 0;
-                        player.MoveTargetType = TargetType.NONE;
-                        player.Dest_X = player.X;
-                        player.Dest_Y = player.Y;
-                        player.Dest_Z = player.Z;
-                    }
-                }
-            }
-            catch
-            {
-                //oops
-            }
-            finally
-            {
-                Globals.PlayerLock.ExitReadLock();
-            }
-
-            Globals.NPCLock.EnterReadLock();
-            try
-            {
-                foreach (NPCInfo npc in gamedata.nearby_npcs.Values)
-                {
-                    if (npc.MoveTarget == dead_object)
-                    {
-                        npc.Moving = false;
-                        npc.MoveTarget = 0;
-                        npc.MoveTargetType = TargetType.NONE;
-                        npc.Dest_X = npc.X;
-                        npc.Dest_Y = npc.Y;
-                        npc.Dest_Z = npc.Z;
-                    }
-                }
-            }
-            catch
-            {
-                //oops
-            }
-            finally
-            {
-                Globals.NPCLock.ExitReadLock();
-            }
-            */
-
             switch (Util.GetType(gamedata, dead_object))
             {
                 case TargetType.PLAYER:
+                    Globals.PlayerLock.EnterWriteLock();
                     AddInfo.Remove_CharInfo(gamedata, dead_object);
+                    Globals.PlayerLock.ExitWriteLock();
                     //Globals.l2net_home.timer_players.Start();
                     break;
             }
@@ -129,42 +73,119 @@ namespace L2Robot
             //need to check if anything had this targeted and set it's Dest_ to the current location
         }
 
+        public static void MoveToPawn(GameData gamedata, ByteBuffer buffe)
+        {
+            uint data1 = buffe.ReadUInt32();
+
+            buffe.SetIndex(25);
+            float dx = buffe.ReadInt32();
+            float dy = buffe.ReadInt32();
+            float dz = buffe.ReadInt32();
+            Coordinate c = new Coordinate();
+            TargetType type = Util.GetType(gamedata, data1);
+
+            //byte[] buff;
+
+            //buff = buffe.Get_ByteArray();
+            //Console.WriteLine("[MoveToPawn]:" + BitConverter.ToString(buff, 0).Replace("-", string.Empty).ToLower());
+
+            switch (type)
+            {
+                case TargetType.SELF:
+                    Globals.MyselfLock.EnterWriteLock();
+                    gamedata.my_char.Moving = false;
+                    gamedata.my_char.MoveTarget = 0;
+                    gamedata.my_char.MoveTargetType = TargetType.NONE;
+                    c.X = dx;
+                    c.Y = dy;
+                    c.Z = dz;
+                    gamedata.my_char.Current_Pos = c;
+                    {
+                        PlayerMsg msg = new PlayerMsg();
+                        msg.PlayerName = gamedata.my_char.Name;
+                        msg.PlayerID = gamedata.my_char.ID;
+                        msg.msg = String.Format("[MoveToPawn] {0}[0x{1:x}] ({2},{3},{4})", 
+                                    gamedata.my_char.Name, gamedata.my_char.ID,
+                                    gamedata.my_char.Current_Pos.X, gamedata.my_char.Current_Pos.Y, gamedata.my_char.Current_Pos.Z);
+                        //Console.WriteLine(h);
+                        Globals.l2net_home.UpdateLog(msg);
+                    }
+                    {
+                        PlayerInstance me = new PlayerInstance();
+                        me.PlayerID = gamedata.my_char.ID;
+                        me.PlayerName = gamedata.my_char.Name;
+                        me.X = gamedata.my_char.Current_Pos.X;
+                        me.Y = gamedata.my_char.Current_Pos.Y;
+                        me.Z = gamedata.my_char.Current_Pos.Z;
+                        Console.WriteLine("[ME]MoveToPawn");
+                        Globals.l2net_home.UpdateInstanceList(me);
+                    }
+                    Globals.MyselfLock.ExitWriteLock();
+                    break;
+                case TargetType.PLAYER:
+                    Globals.PlayerLock.EnterWriteLock();
+                    try
+                    {
+                        CharInfo player = Util.GetChar(gamedata, data1);
+                        if (player != null)
+                        {
+                            c.X = dx;
+                            c.Y = dy;
+                            c.Z = dz;
+                            player.Current_Pos = c;
+                            {
+                                PlayerMsg msg = new PlayerMsg();
+                                msg.PlayerName = gamedata.my_char.Name;
+                                msg.PlayerID = gamedata.my_char.ID;
+                                msg.msg = String.Format("[MoveToPawn] {0}[0x{1:x}] ({2},{3},{4})", 
+                                        player.Name, player.ID,
+                                        player.Current_Pos.X, player.Current_Pos.Y, player.Current_Pos.Z);
+                                //Console.WriteLine(h);
+                                Globals.l2net_home.UpdateLog(msg);
+                            }
+                            AddInfo.Add_CharInfo(gamedata, player);
+                        }
+                    }
+                    finally
+                    {
+                        Globals.PlayerLock.ExitWriteLock();
+                    }
+                    break;
+            }
+        }
+
         public static void UserInfo(GameData gamedata, ByteBuffer buffe)
         {
+            //Call Only once for char login
             Console.WriteLine("[UserInfo]:" + BitConverter.ToString(buffe._data, 0).Replace("-", string.Empty).ToLower());
             int loc = buffe.GetIndex();
             uint ID = buffe.ReadUInt32();
 
+            Globals.MyselfLock.EnterWriteLock();
             if ((gamedata.my_char.ID == 0) || (ID == gamedata.my_char.ID))
             {
                 gamedata.my_char.ID = ID;
                 gamedata.my_char.Load_User(buffe);
-
-                {
-                    string h = String.Format("[ME] {0}[0x{1:x}] ({2},{3},{4})",
-                        gamedata.my_char.Name, gamedata.my_char.ID, gamedata.my_char.X, gamedata.my_char.Y, gamedata.my_char.Z);
-                    //Console.WriteLine(h);
-                    Globals.l2net_home.UpdateLog(h);
-                }
-
-                if (gamedata.teleported)
-                {
-                    gamedata.teleported = false;
-                    GameServer.CleanUp(gamedata);
-                }
             }
             else
             {
                 Console.WriteLine("++++Warning: Update other than user");
             }
+            Globals.MyselfLock.ExitWriteLock();
+        }
+
+        public static void MagicSkillUser(GameData gamedata, ByteBuffer buffe)
+        {
+            
         }
 
         public static void StopMove(GameData gamedata, ByteBuffer buffe)
         {
             uint data1 = buffe.ReadUInt32();
-            int dx = buffe.ReadInt32();
-            int dy = buffe.ReadInt32();
-            int dz = buffe.ReadInt32();
+            float dx = buffe.ReadInt32();
+            float dy = buffe.ReadInt32();
+            float dz = buffe.ReadInt32();
+            Coordinate c = new Coordinate();
 
             TargetType type = Util.GetType(gamedata, data1);
 
@@ -175,18 +196,35 @@ namespace L2Robot
                     gamedata.my_char.Moving = false;
                     gamedata.my_char.MoveTarget = 0;
                     gamedata.my_char.MoveTargetType = TargetType.NONE;
-                    gamedata.my_char.X = dx;
-                    gamedata.my_char.Y = dy;
-                    gamedata.my_char.Z = dz;
-                    gamedata.my_char.Dest_X = dx;
-                    gamedata.my_char.Dest_Y = dy;
-                    gamedata.my_char.Dest_Z = dz;
+                    c.X = dx;
+                    c.Y = dy;
+                    c.Z = dz;
+                    gamedata.my_char.Current_Pos = c;
+
+                    c.X = dx;
+                    c.Y = dy;
+                    c.Z = dz;
+                    gamedata.my_char.Dest_Pos = c;
+
                     {
-                        string h = String.Format("[StopMove] {0}[0x{1:x}] ({2},{3},{4})", 
+                        PlayerMsg msg = new PlayerMsg();
+                        msg.PlayerName = gamedata.my_char.Name;
+                        msg.PlayerID = gamedata.my_char.ID;
+                        msg.msg = String.Format("[StopMove] {0}[0x{1:x}] ({2},{3},{4})", 
                                     gamedata.my_char.Name, gamedata.my_char.ID,
-                                    gamedata.my_char.X, gamedata.my_char.Y, gamedata.my_char.Z);
+                                    gamedata.my_char.Current_Pos.X, gamedata.my_char.Current_Pos.Y, gamedata.my_char.Current_Pos.Z);
                         //Console.WriteLine(h);
-                        Globals.l2net_home.UpdateLog(h);
+                        Globals.l2net_home.UpdateLog(msg);
+                    }
+                    {
+                        PlayerInstance me = new PlayerInstance();
+                        me.PlayerID = gamedata.my_char.ID;
+                        me.PlayerName = gamedata.my_char.Name;
+                        me.X = gamedata.my_char.Current_Pos.X;
+                        me.Y = gamedata.my_char.Current_Pos.Y;
+                        me.Z = gamedata.my_char.Current_Pos.Z;
+                        Console.WriteLine("[ME]Update StopMove");
+                        Globals.l2net_home.UpdateInstanceList(me);
                     }
                     Globals.MyselfLock.ExitWriteLock();
                     break;
@@ -201,19 +239,34 @@ namespace L2Robot
                             player.Moving = false;
                             player.MoveTarget = 0;
                             player.MoveTargetType = TargetType.NONE;
-                            player.X = dx;
-                            player.Y = dy;
-                            player.Z = dz;
-                            player.Dest_X = dx;
-                            player.Dest_Y = dy;
-                            player.Dest_Z = dz;
+
+                            c.X = dx;
+                            c.Y = dy;
+                            c.Z = dz;
+                            player.Current_Pos = c;
+
+                            c.X = dx;
+                            c.Y = dy;
+                            c.Z = dz;
+                            player.Dest_Pos = c;
+
+                            //player.X = dx;
+                            //player.Y = dy;
+                            //player.Z = dz;
+                            //player.Dest_X = dx;
+                            //player.Dest_Y = dy;
+                            //player.Dest_Z = dz;
                             {
-                                string h = String.Format("[StopMove] {0}[0x{1:x}] ({2},{3},{4})", 
+                                PlayerMsg msg = new PlayerMsg();
+                                msg.PlayerName = gamedata.my_char.Name;
+                                msg.PlayerID = gamedata.my_char.ID;
+                                msg.msg = String.Format("[StopMove] {0}[0x{1:x}] ({2},{3},{4})", 
                                         player.Name, player.ID,
-                                        player.X, player.Y, player.Z);
+                                        player.Current_Pos.X, player.Current_Pos.Y, player.Current_Pos.Z);
                                 //Console.WriteLine(h);
-                                Globals.l2net_home.UpdateLog(h);
+                                Globals.l2net_home.UpdateLog(msg);
                             }
+                            AddInfo.Add_CharInfo(gamedata, player);
                         }
                     }
                     finally
@@ -234,6 +287,7 @@ namespace L2Robot
             int ox = buffe.ReadInt32();
             int oy = buffe.ReadInt32();
             int oz = buffe.ReadInt32();
+            Coordinate c = new Coordinate();
 
             TargetType type = Util.GetType(gamedata, data1);
 
@@ -244,16 +298,37 @@ namespace L2Robot
                     case TargetType.SELF:
                         Globals.MyselfLock.EnterWriteLock();
                         //Globals.gamedata.my_char.Clear_Botting_Buffing(false);
-                        gamedata.my_char.X = ox;
-                        gamedata.my_char.Y = oy;
-                        gamedata.my_char.Z = oz;
-                        gamedata.my_char.Dest_X = dx;
-                        gamedata.my_char.Dest_Y = dy;
-                        gamedata.my_char.Dest_Z = dz;
+                        c.X = ox;
+                        c.Y = oy;
+                        c.Z = oz;
+                        gamedata.my_char.Current_Pos = c;
+
+                        c.X = dx;
+                        c.Y = dy;
+                        c.Z = dz;
+                        gamedata.my_char.Dest_Pos = c;
+
+                        //gamedata.my_char.X = ox;
+                        //gamedata.my_char.Y = oy;
+                        //gamedata.my_char.Z = oz;
+                        //gamedata.my_char.Dest_X = dx;
+                        //gamedata.my_char.Dest_Y = dy;
+                        //gamedata.my_char.Dest_Z = dz;
                         gamedata.my_char.Moving = false;
                         gamedata.my_char.MoveTarget = 0;
                         gamedata.my_char.MoveTargetType = 0;
                         gamedata.my_char.lastMoveTime = DateTime.Now;
+
+                        {
+                            PlayerInstance me = new PlayerInstance();
+                            me.PlayerID = gamedata.my_char.ID;
+                            me.PlayerName = gamedata.my_char.Name;
+                            me.X = gamedata.my_char.Current_Pos.X;
+                            me.Y = gamedata.my_char.Current_Pos.Y;
+                            me.Z = gamedata.my_char.Current_Pos.Z;
+                            Console.WriteLine("[ME]Update MoveToLocation1");
+                            Globals.l2net_home.UpdateInstanceList(me);
+                        }
 
                         // Console.WriteLine("[MoveToLocation] {0}[0x{1:x}] ({2},{3},{4}) -> ({5},{6},{7})", 
                         //         gamedata.my_char.Name, gamedata.my_char.ID,
@@ -269,27 +344,37 @@ namespace L2Robot
 
                             if (player != null)
                             {
-                                player.X = ox;
-                                player.Y = oy;
-                                player.Z = oz;
-                                player.Dest_X = dx;
-                                player.Dest_Y = dy;
-                                player.Dest_Z = dz;
+                                c.X = ox;
+                                c.Y = oy;
+                                c.Z = oz;
+                                player.Current_Pos = c;
+
+                                c.X = dx;
+                                c.Y = dy;
+                                c.Z = dz;
+                                player.Dest_Pos = c;
+                                //player.X = ox;
+                                //player.Y = oy;
+                                //player.Z = oz;
+                                //player.Dest_X = dx;
+                                //player.Dest_Y = dy;
+                                //player.Dest_Z = dz;
                                 player.Moving = false;
                                 player.MoveTarget = 0;
                                 player.MoveTargetType = 0;
                                 player.lastMoveTime = DateTime.Now;
-
                                 //Console.WriteLine("[MoveToLocation] {0}[0x{1:x}] ({2},{3},{4}) -> ({5},{6},{7})", 
                                 //player.Name, player.ID,
                                 //player.X, player.Y, player.Z,
                                 //player.Dest_X, player.Dest_Y, player.Dest_Z);
+                                AddInfo.Add_CharInfo(gamedata, player);
                             }
                         }//unlock
                         finally
                         {
                             Globals.PlayerLock.ExitWriteLock();
                         }
+
                         break;
                 }
             }
@@ -300,23 +385,46 @@ namespace L2Robot
                     case TargetType.SELF:
                         //Globals.gamedata.my_char.Clear_Botting_Buffing(false);
                         Globals.MyselfLock.EnterWriteLock();
-                        gamedata.my_char.X = ox;
-                        gamedata.my_char.Y = oy;
-                        gamedata.my_char.Z = oz;
-                        gamedata.my_char.Dest_X = dx;
-                        gamedata.my_char.Dest_Y = dy;
-                        gamedata.my_char.Dest_Z = dz;
+                        c.X = ox;
+                        c.Y = oy;
+                        c.Z = oz;
+                        gamedata.my_char.Current_Pos = c;
+
+                        c.X = dx;
+                        c.Y = dy;
+                        c.Z = dz;
+                        gamedata.my_char.Dest_Pos = c;
+                        //gamedata.my_char.X = ox;
+                        //gamedata.my_char.Y = oy;
+                        //gamedata.my_char.Z = oz;
+                        //gamedata.my_char.Dest_X = dx;
+                        //gamedata.my_char.Dest_Y = dy;
+                        //gamedata.my_char.Dest_Z = dz;
                         gamedata.my_char.Moving = true;
                         gamedata.my_char.MoveTarget = 0;
                         gamedata.my_char.MoveTargetType = 0;
                         gamedata.my_char.lastMoveTime = DateTime.Now;
                         {
-                            string h = String.Format("[MoveToLocation] {0}[0x{1:x}] ({2},{3},{4}) -> ({5},{6},{7})", 
+                            PlayerMsg msg = new PlayerMsg();
+                            msg.PlayerName = gamedata.my_char.Name;
+                            msg.PlayerID = gamedata.my_char.ID;
+                            msg.msg = String.Format("[MoveToLocation] {0}[0x{1:x}] ({2},{3},{4}) -> ({5},{6},{7})", 
                                 gamedata.my_char.Name, gamedata.my_char.ID,
-                                gamedata.my_char.X, gamedata.my_char.Y, gamedata.my_char.Z,
-                                gamedata.my_char.Dest_X, gamedata.my_char.Dest_Y, gamedata.my_char.Dest_Z);
+                                gamedata.my_char.Current_Pos.X, gamedata.my_char.Current_Pos.Y, gamedata.my_char.Current_Pos.Z,
+                                gamedata.my_char.Dest_Pos.X, gamedata.my_char.Dest_Pos.Y, gamedata.my_char.Dest_Pos.Z);
                             //Console.WriteLine(h);
-                            Globals.l2net_home.UpdateLog(h);
+                            Globals.l2net_home.UpdateLog(msg);
+                        }
+                        
+                        {
+                            PlayerInstance me = new PlayerInstance();
+                            me.PlayerID = gamedata.my_char.ID;
+                            me.PlayerName = gamedata.my_char.Name;
+                            me.X = gamedata.my_char.Current_Pos.X;
+                            me.Y = gamedata.my_char.Current_Pos.Y;
+                            me.Z = gamedata.my_char.Current_Pos.Z;
+                            Globals.l2net_home.UpdateInstanceList(me);
+                            Console.WriteLine("[ME]Update MoveToLocation2");
                         }
                         Globals.MyselfLock.ExitWriteLock();
                         break;
@@ -328,24 +436,37 @@ namespace L2Robot
 
                             if (player != null)
                             {
-                                player.X = ox;
-                                player.Y = oy;
-                                player.Z = oz;
-                                player.Dest_X = dx;
-                                player.Dest_Y = dy;
-                                player.Dest_Z = dz;
+                                c.X = ox;
+                                c.Y = oy;
+                                c.Z = oz;
+                                player.Current_Pos = c;
+
+                                c.X = dx;
+                                c.Y = dy;
+                                c.Z = dz;
+                                player.Dest_Pos = c;
+                                //player.X = ox;
+                                //player.Y = oy;
+                                //player.Z = oz;
+                                //player.Dest_X = dx;
+                                //player.Dest_Y = dy;
+                                //player.Dest_Z = dz;
                                 player.Moving = true;
                                 player.MoveTarget = 0;
                                 player.MoveTargetType = 0;
                                 player.lastMoveTime = DateTime.Now;
                                 {
-                                    string h = String.Format("[MoveToLocation] {0}[0x{1:x}] ({2},{3},{4}) -> ({5},{6},{7})", 
-                                    player.Name, player.ID,
-                                    player.X, player.Y, player.Z,
-                                    player.Dest_X, player.Dest_Y, player.Dest_Z);
+                                    PlayerMsg msg = new PlayerMsg();
+                                    msg.PlayerName = gamedata.my_char.Name;
+                                    msg.PlayerID = gamedata.my_char.ID;
+                                    msg.msg = String.Format("[MoveToLocation] {0}[0x{1:x}] ({2},{3},{4}) -> ({5},{6},{7})", 
+                                        player.Name, player.ID,
+                                        player.Current_Pos.X, player.Current_Pos.Y, player.Current_Pos.Z,
+                                        player.Dest_Pos.X, player.Dest_Pos.Y, player.Dest_Pos.Z);
                                     //Console.WriteLine(h);
-                                    Globals.l2net_home.UpdateLog(h);
-                                }                                
+                                    Globals.l2net_home.UpdateLog(msg);
+                                }
+                                AddInfo.Add_CharInfo(gamedata, player);                                
                             }
                         }//unlock
                         finally
@@ -364,6 +485,7 @@ namespace L2Robot
             int _x = buff.ReadInt32();
             int _y = buff.ReadInt32();
             int _z = buff.ReadInt32();
+            Coordinate c = new Coordinate();
 
             TargetType type = Util.GetType(gamedata, id);
 
@@ -371,19 +493,31 @@ namespace L2Robot
             {
                 case TargetType.SELF:
                     Globals.MyselfLock.EnterWriteLock();
-                    gamedata.my_char.X = _x;
-                    gamedata.my_char.Y = _y;
-                    gamedata.my_char.Z = _z;
-                    gamedata.my_char.Dest_X = _x;
-                    gamedata.my_char.Dest_Y = _y;
-                    gamedata.my_char.Dest_Z = _z;
+                    c.X = _x;
+                    c.Y = _y;
+                    c.Z = _z;
+                    gamedata.my_char.Current_Pos = c;
+
+                    c.X = _x;
+                    c.Y = _y;
+                    c.Z = _z;
+                    gamedata.my_char.Dest_Pos = c;
+                    //gamedata.my_char.X = _x;
+                    //gamedata.my_char.Y = _y;
+                    //gamedata.my_char.Z = _z;
+                    //gamedata.my_char.Dest_X = _x;
+                    //gamedata.my_char.Dest_Y = _y;
+                    //gamedata.my_char.Dest_Z = _z;
                     gamedata.teleported = true;
                     {
-                        string h = String.Format("[Teleport] {0}[0x{1:x}] -> ({2},{3},{4})", 
+                        PlayerMsg msg = new PlayerMsg();
+                        msg.PlayerName = gamedata.my_char.Name;
+                        msg.PlayerID = gamedata.my_char.ID;
+                        msg.msg = String.Format("[Teleport] {0}[0x{1:x}] -> ({2},{3},{4})", 
                                 gamedata.my_char.Name, gamedata.my_char.ID,
-                                gamedata.my_char.X, gamedata.my_char.Y, gamedata.my_char.Z);
+                                gamedata.my_char.Current_Pos.X, gamedata.my_char.Current_Pos.Y, gamedata.my_char.Current_Pos.Z);
                         //Console.WriteLine(h);
-                        Globals.l2net_home.UpdateLog(h);
+                        Globals.l2net_home.UpdateLog(msg);
                     }
 
                     Globals.MyselfLock.ExitWriteLock();
@@ -396,19 +530,32 @@ namespace L2Robot
 
                         if (player != null)
                         {
-                            player.X = _x;
-                            player.Y = _y;
-                            player.Z = _z;
-                            player.Dest_X = _x;
-                            player.Dest_Y = _y;
-                            player.Dest_Z = _z;
+                            c.X = _x;
+                            c.Y = _y;
+                            c.Z = _z;
+                            player.Current_Pos = c;
+
+                            c.X = _x;
+                            c.Y = _y;
+                            c.Z = _z;
+                            player.Dest_Pos = c;
+                            //player.X = _x;
+                            //player.Y = _y;
+                            //player.Z = _z;
+                            //player.Dest_X = _x;
+                            //player.Dest_Y = _y;
+                            //player.Dest_Z = _z;
                             {
-                                string h = String.Format("[Teleport] {0}[0x{1:x}] -> ({2},{3},{4})", 
+                                PlayerMsg msg = new PlayerMsg();
+                                msg.PlayerName = gamedata.my_char.Name;
+                                msg.PlayerID = gamedata.my_char.ID;
+                                msg.msg = String.Format("[Teleport] {0}[0x{1:x}] -> ({2},{3},{4})", 
                                 player.Name, player.ID,
-                                player.X, player.Y, player.Z);
+                                player.Current_Pos.X, player.Current_Pos.Y, player.Current_Pos.Z);
                                 //Console.WriteLine(h);
-                                Globals.l2net_home.UpdateLog(h);
+                                Globals.l2net_home.UpdateLog(msg);
                             }
+                            AddInfo.Add_CharInfo(gamedata, player);
                         }
                     }//unlock
                     finally

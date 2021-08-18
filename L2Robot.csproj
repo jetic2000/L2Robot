@@ -80,55 +80,20 @@
     <Compile Include="Code\Crypting\NewCrypt.cs" />
     <Compile Include="Code\Data\GameData.cs" />
     <Compile Include="Code\Data\Globals.cs" />
-    <Compile Include="Code\Data\LoadData.cs" />
-    <Compile Include="Code\Data\Packs\NPC\NPCInfo.cs" />
     <Compile Include="Code\Data\Packs\Object_Base.cs" />
     <Compile Include="Code\Data\Packs\Other Players\CharInfo.cs" />
-    <Compile Include="Code\Data\Packs\Other Players\Clan_Info.cs" />
+    <Compile Include="Code\Data\Packs\Player\BackList.cs" />
     <Compile Include="Code\Data\Packs\Player\Player_Info.cs" />
-    <Compile Include="Code\Data\Packs\Text\ActionName.cs" />
-    <Compile Include="Code\Data\Packs\Text\BaseText.cs" />
-    <Compile Include="Code\Data\Packs\Text\Classes.cs" />
-    <Compile Include="Code\Data\Packs\Text\HennaGroup.cs" />
-    <Compile Include="Code\Data\Packs\Text\ItemName.cs" />
-    <Compile Include="Code\Data\Packs\Text\MapData.cs" />
-    <Compile Include="Code\Data\Packs\Text\NPCName.cs" />
-    <Compile Include="Code\Data\Packs\Text\NPCString.cs" />
-    <Compile Include="Code\Data\Packs\Text\QuestName.cs" />
-    <Compile Include="Code\Data\Packs\Text\Races.cs" />
-    <Compile Include="Code\Data\Packs\Text\ServerName.cs" />
-    <Compile Include="Code\Data\Packs\Text\SkillInfo.cs" />
-    <Compile Include="Code\Data\Packs\Text\SystemMsg.cs" />
-    <Compile Include="Code\Data\Packs\Text\ZoneName.cs" />
     <Compile Include="Code\Logic\GameServer.cs" />
     <Compile Include="Code\Logic\GameServer\GameServer_HandlePackets.cs" />
     <Compile Include="Code\Logic\GameServer_CleanUp.cs" />
     <Compile Include="Code\Network\Packets\ClientPackets.cs" />
     <Compile Include="Code\Network\Packets\ServerPackets.cs" />
-    <Compile Include="Code\Scripting\ELIZA\ELIZA.cs" />
-    <Compile Include="Code\Scripting\Handlers\Script_Evaluate.cs" />
-    <Compile Include="Code\Scripting\Handlers\Script_Handlers.cs" />
-    <Compile Include="Code\Scripting\Handlers\Script_Handlers_L2.cs" />
-    <Compile Include="Code\Scripting\Logic\ScriptFile.cs" />
-    <Compile Include="Code\Scripting\Logic\ScriptThread.cs" />
-    <Compile Include="Code\Scripting\Logic\Script_Events.cs" />
-    <Compile Include="Code\Scripting\Logic\Script_Ops.cs" />
-    <Compile Include="Code\Scripting\Logic\Script_Values.cs" />
-    <Compile Include="Code\Scripting\ScriptEngineThread.cs" />
-    <Compile Include="Code\Scripting\Variables\ScriptVariable.cs" />
-    <Compile Include="Code\Scripting\Variables\Script_Class.cs" />
-    <Compile Include="Code\Scripting\Variables\Script_GetValue.cs" />
-    <Compile Include="Code\Scripting\Variables\VariableList.cs" />
-    <Compile Include="Code\Scripting\Windows\ScriptWindow.cs" />
-    <Compile Include="Code\Util\Pathing\Astar.cs" />
-    <Compile Include="Code\Util\Pathing\AstarNode.cs" />
-    <Compile Include="Code\Util\Pathing\PathManager.cs" />
-    <Compile Include="Code\Util\Pathing\PathValues.cs" />
+    <Compile Include="Code\Scripts\FishFly.cs" />
     <Compile Include="Code\Util\SmartTimer.cs" />
     <Compile Include="Code\Util\Util.cs" />
     <Compile Include="Code\Util\Util_Get.cs" />
     <Compile Include="Windows\Add\AddInfo\AddInfo.cs" />
-    <Compile Include="Windows\L2NET\L2NET_Add.cs" />
     <Compile Include="Windows\L2NET\L2NET_Timers.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -175,8 +140,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Code\Data\Packs\Items\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

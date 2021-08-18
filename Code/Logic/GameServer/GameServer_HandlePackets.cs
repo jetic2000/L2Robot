@@ -9,7 +9,7 @@ namespace L2Robot
             ByteBuffer buffe;
             uint b0 = 0, b1 = 0;//byte
             string last_p = "";//, last_p2 = "";
-            int index = 0;
+            //int index = 0;
 
             while (this.gamedata.GetCount_DataToBot() > 0)
             {
@@ -22,6 +22,12 @@ namespace L2Robot
                     {
                         //Console.WriteLine("-gamereadqueue.Dequeue()");
                         buffe = (ByteBuffer)this.gamedata.gamereadqueue.Dequeue();
+                        {
+                            byte[] buff;
+                            buff = buffe.Get_ByteArray();
+                            Console.WriteLine("[S]:" + BitConverter.ToString(buff, 0).Replace("-", string.Empty).ToLower());
+                        }
+
                     }
                     catch (System.Exception e)
                     {
@@ -61,7 +67,7 @@ namespace L2Robot
                             //ServerPackets.CharInfo(this.gamedata, buffe);
                             break;
                         case PServer.UI:
-                            Console.WriteLine("[S]:PServer.UI");
+                            //Console.WriteLine("[S]:PServer.UI");
                             ServerPackets.UserInfo(this.gamedata, buffe);
                             break;
                         case PServer.StopMove:
@@ -86,6 +92,12 @@ namespace L2Robot
                             break;
                         case PServer.DeleteObject:
                             ServerPackets.DeleteItem(this.gamedata, buffe);
+                            break;
+                        case PServer.MoveToPawn:
+                            ServerPackets.MoveToPawn(this.gamedata, buffe);
+                            break;
+                        case PServer.MagicSkillUser:
+                            ServerPackets.MagicSkillUser(this.gamedata, buffe);
                             break;
                         case PServer.EXPacket:
                             b1 = buffe.ReadUInt16();

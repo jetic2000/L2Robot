@@ -37,11 +37,11 @@ namespace L2Robot
             return val;
         }
 
-        static public int Distance(float x1, float y1, float z1, float x2, float y2, float z2)
+        static public int Distance(Coordinate me, Coordinate player)
         {
-            double xlim = System.Convert.ToDouble(x1 - x2);
-            double ylim = System.Convert.ToDouble(y1 - y2);
-            double zlim = System.Convert.ToDouble(z1 - z2);
+            double xlim = System.Convert.ToDouble(me.X - player.X);
+            double ylim = System.Convert.ToDouble(me.Y - player.Y);
+            double zlim = System.Convert.ToDouble(me.Z - player.Z);
 
             double dist = System.Math.Sqrt(System.Math.Pow(xlim, 2) + System.Math.Pow(ylim, 2) + System.Math.Pow(zlim, 2));
 
