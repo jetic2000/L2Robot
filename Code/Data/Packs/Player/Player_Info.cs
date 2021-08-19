@@ -13,6 +13,7 @@ namespace L2Robot
         private string _Name = "";
         private Coordinate _Current_Pos;
         private Coordinate _Dest_Pos;
+        private bool _isSafeZone;
         //public volatile float X = 0;
         //public volatile float Y = 0;
         //public volatile float Z = 0;
@@ -32,6 +33,26 @@ namespace L2Robot
         //private readonly object lastMoveTimeLock = new object();
         private readonly object PlayerInfoLock = new object();
 
+        public bool isSafeZone
+        {
+            get
+            {
+                bool tmp;
+                lock (PlayerInfoLock)
+                {
+                    tmp = this._isSafeZone;
+                }
+                return tmp;
+            }
+            set
+            {
+                lock (PlayerInfoLock)
+                {
+                    _isSafeZone = value;
+                }
+                //Globals.l2net_home.SetName();
+            }
+        }
         public string Name
         {
             get
@@ -298,6 +319,7 @@ namespace L2Robot
                 player.X = Current_Pos.X;
                 player.Y = Current_Pos.Y;
                 player.Z = Current_Pos.Z;
+                player.toInit = false;
                 Globals.l2net_home.UpdateInstanceList(player);
                 //Globals.MyselfLock.ExitWriteLock();
 

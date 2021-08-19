@@ -58,12 +58,12 @@ namespace L2Robot
             SwitchExCMD(0x70);
             SwitchExCMD(0x71);
 
-            Console.WriteLine("Magic=0x{0:X}", magic);
-            Console.WriteLine("resultp[CMD]={0}", BitConverter.ToString(PacketIDs));
+            //Console.WriteLine("Magic=0x{0:X}", magic);
+            //Console.WriteLine("resultp[CMD]={0}", BitConverter.ToString(PacketIDs));
 
             for (int j = 0; j < 64; j++)
             {
-                Console.WriteLine("result[EXCMD]=0x{0:X}", SuperIDs[j]);
+                //Console.WriteLine("result[EXCMD]=0x{0:X}", SuperIDs[j]);
                 //Console.WriteLine("result[EXCMD]={0}", BitConverter.ToString(MixMixedPackets.resultEx));
             }
         }
@@ -181,7 +181,7 @@ namespace L2Robot
                 {
                     PacketIDs[i] = PacketIDs[cmd];
                     PacketIDs[cmd] = cmd;
-                    Console.WriteLine("SwitchCMD - 0x{0:x}:{1}", PacketIDs[i], i);
+                    //Console.WriteLine("SwitchCMD - 0x{0:x}:{1}", PacketIDs[i], i);
                     break;
                 }
             }

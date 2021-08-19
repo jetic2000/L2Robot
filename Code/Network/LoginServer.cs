@@ -129,7 +129,7 @@ namespace L2Robot
                     MIB_TCPTABLE_OWNER_PID tab = (MIB_TCPTABLE_OWNER_PID)Marshal.PtrToStructure(buffTable, typeof(MIB_TCPTABLE_OWNER_PID));
                     IntPtr rowPtr = (IntPtr)((long)buffTable + Marshal.SizeOf(tab.dwNumEntries));
                     tTable = new MIB_TCPROW_OWNER_PID[tab.dwNumEntries];
-                    Console.WriteLine("Get TCP Table");
+                    //Console.WriteLine("Get TCP Table");
                     for (int i = 0; i < tab.dwNumEntries; i++)
                     {
                         MIB_TCPROW_OWNER_PID tcpRow = (MIB_TCPROW_OWNER_PID)Marshal.PtrToStructure(rowPtr, typeof(MIB_TCPROW_OWNER_PID));

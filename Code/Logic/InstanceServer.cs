@@ -4,26 +4,25 @@ using System.Threading;
 
 namespace L2Robot
 {
-    public partial class GameServer
+    public partial class InstanceServer
     {
         public Thread processthread;
-        GameData gamedata;
+        //GameData gamedata;
 
-        public GameServer(GameData gamedata)
+        public InstanceServer(GameData gamedata)
         {
-            this.gamedata = gamedata;
             Init();
         }
 
         public void Init()
         {
 
-            Globals.PATH = Environment.CurrentDirectory;
-            processthread = new Thread(new ThreadStart(ProcessDataThread));
+            //Globals.PATH = Environment.CurrentDirectory;
+            processthread = new Thread(new ThreadStart(InstanceServerThread));
             processthread.IsBackground = true;
         }
 
-        public void ProcessDataThread()
+        public void InstanceServerThread()
         {
             DateTime last_animate = DateTime.Now;
             DateTime last_alert = DateTime.Now;
@@ -31,16 +30,13 @@ namespace L2Robot
 
             try
             {
-                while (gamedata.running)
+                while (true)
                 {
-                    HandlePackets();
-
-                    System.Threading.Thread.Sleep(Globals.SLEEP_ProcessDataThread);//sleep for 10ms; when we get new data it should wake us up
+                    System.Threading.Thread.Sleep(Globals.SLEEP_InstanceServerThread);//sleep for 10ms; when we get new data it should wake us up
 
                     if ((DateTime.Now - last_clean).Ticks > Globals.CLEAN_TIMER)
                     {
-                        CleanUp(this.gamedata);
-                        last_clean = DateTime.Now;
+                        
                     }
 
                 }//end of while running

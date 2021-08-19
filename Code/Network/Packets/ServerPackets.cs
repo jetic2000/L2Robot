@@ -46,9 +46,19 @@ namespace L2Robot
 
         public static void ExSetCompassZoneCode(GameData gamedata, ByteBuffer buff)
         {
-            uint type = buff.ReadUInt32();//
-            gamedata.cur_zone = type;
-            Console.WriteLine("---ExSetCompassZoneCode: 0x{0:x}", gamedata.cur_zone);
+            uint type = buff.ReadUInt32();
+            Console.WriteLine("---ExSetCompassZoneCode: 0x{0:x}", type);
+
+            Globals.MyselfLock.EnterWriteLock();
+            if (type == 0xF)
+            {
+                gamedata.my_char.isSafeZone = false;
+            }
+            else
+            {
+                gamedata.my_char.isSafeZone = true;
+            }
+            Globals.MyselfLock.ExitWriteLock();
         }
 
 
@@ -104,6 +114,7 @@ namespace L2Robot
                         PlayerMsg msg = new PlayerMsg();
                         msg.PlayerName = gamedata.my_char.Name;
                         msg.PlayerID = gamedata.my_char.ID;
+                        //msg.isForRel = true;
                         msg.msg = String.Format("[MoveToPawn] {0}[0x{1:x}] ({2},{3},{4})", 
                                     gamedata.my_char.Name, gamedata.my_char.ID,
                                     gamedata.my_char.Current_Pos.X, gamedata.my_char.Current_Pos.Y, gamedata.my_char.Current_Pos.Z);
@@ -117,6 +128,7 @@ namespace L2Robot
                         me.X = gamedata.my_char.Current_Pos.X;
                         me.Y = gamedata.my_char.Current_Pos.Y;
                         me.Z = gamedata.my_char.Current_Pos.Z;
+                        me.toInit = false;
                         Console.WriteLine("[ME]MoveToPawn");
                         Globals.l2net_home.UpdateInstanceList(me);
                     }
@@ -137,6 +149,7 @@ namespace L2Robot
                                 PlayerMsg msg = new PlayerMsg();
                                 msg.PlayerName = gamedata.my_char.Name;
                                 msg.PlayerID = gamedata.my_char.ID;
+                                //msg.isForRel = true;
                                 msg.msg = String.Format("[MoveToPawn] {0}[0x{1:x}] ({2},{3},{4})", 
                                         player.Name, player.ID,
                                         player.Current_Pos.X, player.Current_Pos.Y, player.Current_Pos.Z);
@@ -169,7 +182,12 @@ namespace L2Robot
             }
             else
             {
-                Console.WriteLine("++++Warning: Update other than user");
+                //Console.WriteLine("++++Warning: Update other than user, relogin happens");
+                gamedata.ReLogin();
+                gamedata.my_char.ID = ID;
+                gamedata.my_char.Load_User(buffe);
+                //Reload char
+                //Besides net package part, everything of myself need to be re-init
             }
             Globals.MyselfLock.ExitWriteLock();
         }
@@ -223,6 +241,7 @@ namespace L2Robot
                         me.X = gamedata.my_char.Current_Pos.X;
                         me.Y = gamedata.my_char.Current_Pos.Y;
                         me.Z = gamedata.my_char.Current_Pos.Z;
+                        me.toInit = false;
                         Console.WriteLine("[ME]Update StopMove");
                         Globals.l2net_home.UpdateInstanceList(me);
                     }
@@ -326,7 +345,8 @@ namespace L2Robot
                             me.X = gamedata.my_char.Current_Pos.X;
                             me.Y = gamedata.my_char.Current_Pos.Y;
                             me.Z = gamedata.my_char.Current_Pos.Z;
-                            Console.WriteLine("[ME]Update MoveToLocation1");
+                            me.toInit = false;
+                            //Console.WriteLine("[ME]Update MoveToLocation1");
                             Globals.l2net_home.UpdateInstanceList(me);
                         }
 
@@ -423,8 +443,9 @@ namespace L2Robot
                             me.X = gamedata.my_char.Current_Pos.X;
                             me.Y = gamedata.my_char.Current_Pos.Y;
                             me.Z = gamedata.my_char.Current_Pos.Z;
+                            me.toInit = false;
                             Globals.l2net_home.UpdateInstanceList(me);
-                            Console.WriteLine("[ME]Update MoveToLocation2");
+                            //Console.WriteLine("[ME]Update MoveToLocation2");
                         }
                         Globals.MyselfLock.ExitWriteLock();
                         break;

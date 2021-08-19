@@ -37,7 +37,13 @@ namespace L2Robot
             Globals.InstancesLock.EnterWriteLock();
             if (Globals.Games.ContainsKey(this.gamedata.Client_Port))
             {
+                PlayerInstance p = new PlayerInstance();
+                p.PlayerName = this.gamedata.my_char.Name;
+                p.toInit = true;
+                Globals.l2net_home.UpdateInstanceList(p);
+
                 Globals.Games.Remove(this.gamedata.Client_Port);
+                this.gamedata.running = false;
                 //Globals.l2net_home.timer_instances.Start();
                 //Globals.Dirty_Games.Add(this.gamedata);
             }

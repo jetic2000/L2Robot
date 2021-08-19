@@ -27,6 +27,7 @@ namespace L2Robot
                 }
 
                 FishFlyPlayer p = new FishFlyPlayer();
+                p.toInit = false;
                 p.PlayerName = ch_inf.Name;
                 p.PlayerID = ch_inf.ID;
                 //Globals.MyselfLock.ExitWriteLock();
@@ -63,6 +64,7 @@ namespace L2Robot
                 FishFlyPlayer p = new FishFlyPlayer();
                 p.PlayerName = "";
                 p.PlayerID = id;
+                p.toInit = false;
                 //Globals.MyselfLock.EnterWriteLock();
                 p.OwenID = gamedata.my_char.ID;
                 Globals.l2net_home.UpdateDataGridView(p);

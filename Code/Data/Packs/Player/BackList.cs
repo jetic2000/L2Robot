@@ -21,14 +21,14 @@ namespace L2Robot
             try
             {
                 BlackList.Clear();
-                Console.WriteLine("Read Cfg File:{0}", cfg);
+                //Console.WriteLine("Read Cfg File:{0}", cfg);
                 using (StreamReader sr = new StreamReader(cfg))
                 {
                     string line;
                     // 从文件读取并显示行，直到文件的末尾 
                     while ((line = sr.ReadLine()) != null)
                     {
-                        Console.WriteLine(line);
+                        //Console.WriteLine(line);
                         BlackList.Add(line);
                     }
                 }

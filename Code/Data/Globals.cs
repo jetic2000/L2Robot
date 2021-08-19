@@ -6,6 +6,10 @@ using System.ComponentModel;
 
 namespace L2Robot
 {
+    public enum ZoneCode: uint
+    {
+        
+    }
 
     public enum TargetType : byte
     {
@@ -99,7 +103,8 @@ namespace L2Robot
         public const int SLEEP_FishFLyThread = 1000;
 
 
-        public const int SLEEP_ProcessDataThread = 10;//50
+        public const int SLEEP_ProcessDataThread = 50;//50
+        public const int SLEEP_InstanceServerThread = 50;//50
 
         //Oddi: Sleep_followrest..
         

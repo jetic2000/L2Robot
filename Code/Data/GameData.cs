@@ -41,9 +41,22 @@ namespace L2Robot
             get { return _PlayerID; }
             set { _PlayerID = value; }
         }
+
+        public bool toInit
+        {
+            get { return _toInit; }
+            set { _toInit = value; }
+        }
+        public uint RemoveID
+        {
+            get { return _RemoveID; }
+            set { _RemoveID = value; }
+        }
         private string _PlayerName;
         private uint _PlayerID;
         private uint _OwenID;
+        private uint _RemoveID;
+        private bool _toInit;
     }
 
     public struct PlayerInstance
@@ -90,6 +103,12 @@ namespace L2Robot
             set { _Z = value; }
         }
 
+        public bool toInit
+        {
+            get { return _toInit; }
+            set { _toInit = value; }
+        }
+
         private string _PlayerName;
         private uint _PlayerID;
         private uint _LocalPort;
@@ -97,14 +116,21 @@ namespace L2Robot
         private float _X;
         private float _Y;
         private float _Z;
+        private bool _toInit;
 
     }
 
-    public struct PlayerMsg
+    public class PlayerMsg
     {
         public string PlayerName;
         public uint PlayerID;
         public string msg;
+        public bool isForRel;
+
+        public PlayerMsg()
+        {
+            isForRel = false;
+        }
     }
 
     public class Server
@@ -311,8 +337,7 @@ namespace L2Robot
         public volatile Chronicle Chron;
         public volatile bool logged_in = false;
         public volatile bool running = false;
-        public volatile uint cur_zone = 0;
-
+        //public volatile uint cur_zone = 0;
         private readonly object MixerLock = new object();
         private readonly object processPidLock = new object();
         private readonly object gamethreadLock = new object();
@@ -341,6 +366,29 @@ namespace L2Robot
         {
             CreateCrypt();
            //ig_listener = new Thread(new ThreadStart(LoginServer.IG_Listener));
+        }
+
+        public void ReLogin()
+        {
+            //Stop Fish Check
+            //Clear UI
+            FishFlyPlayer fp = new FishFlyPlayer();
+            fp.toInit = true; //Speical OwenID = 0 to notifiy init
+            fp.RemoveID = this.my_char.ID;
+            Globals.l2net_home.UpdateDataGridView(fp);
+
+            PlayerInstance p = new PlayerInstance();
+            p.PlayerName = this.my_char.Name;
+            p.toInit = true;
+            Globals.l2net_home.UpdateInstanceList(p);
+
+            //this.fishflythread.bRunning = false;
+            this.fishflythread.bGetData = false;
+
+            my_char = new Player_Info();
+            nearby_chars = new SortedList();
+            blacklist_chars = new BlackListPlayers();
+            Globals.l2net_home.ClearBlackList();
         }
 
         public void CreateCrypt()

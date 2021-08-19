@@ -86,6 +86,7 @@
     <Compile Include="Code\Data\Packs\Player\Player_Info.cs" />
     <Compile Include="Code\Logic\GameServer.cs" />
     <Compile Include="Code\Logic\GameServer\GameServer_HandlePackets.cs" />
+    <Compile Include="Code\Logic\InstanceServer.cs" />
     <Compile Include="Code\Logic\GameServer_CleanUp.cs" />
     <Compile Include="Code\Network\Packets\ClientPackets.cs" />
     <Compile Include="Code\Network\Packets\ServerPackets.cs" />

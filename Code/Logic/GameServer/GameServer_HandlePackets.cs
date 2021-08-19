@@ -25,7 +25,7 @@ namespace L2Robot
                         {
                             byte[] buff;
                             buff = buffe.Get_ByteArray();
-                            Console.WriteLine("[S]:" + BitConverter.ToString(buff, 0).Replace("-", string.Empty).ToLower());
+                            //Console.WriteLine("[S]:" + BitConverter.ToString(buff, 0).Replace("-", string.Empty).ToLower());
                         }
 
                     }
@@ -112,6 +112,11 @@ namespace L2Robot
                                     ServerPackets.EXUserInfo(this.gamedata, buffe);
                                     break;
                                 case PServerEX.ExSetCompassZoneCode:
+                                    {
+                                        byte[] buff;
+                                        buff = buffe.Get_ByteArray();
+                                        Console.WriteLine("[S]:" + BitConverter.ToString(buff, 0).Replace("-", string.Empty).ToLower());
+                                    }
                                     ServerPackets.ExSetCompassZoneCode(this.gamedata, buffe);
                                     break;
                             }

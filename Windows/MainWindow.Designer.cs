@@ -140,9 +140,11 @@ namespace L2Robot
             this.dataGridViewNearPlayer.RowHeadersVisible = false;
             this.dataGridViewNearPlayer.RowTemplate.Height = 23;
             this.dataGridViewNearPlayer.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.dataGridViewNearPlayer.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridViewNearPlayer.Size = new System.Drawing.Size(210, 318);
             this.dataGridViewNearPlayer.TabIndex = 4;
             this.dataGridViewNearPlayer.TabStop = false;
+            this.dataGridViewNearPlayer.SelectionChanged += new System.EventHandler(this.dataGridViewNearPlayer_SelectionChanged);
             // 
             // GRPlayerName
             // 

@@ -1,13 +1,10 @@
-﻿using System.Linq.Expressions;
-using System;
+﻿using System;
 using System.Windows.Forms;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Data;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace L2Robot
@@ -46,6 +43,9 @@ namespace L2Robot
             lvBtn.Visible = false;
             lvBtn.Click += new EventHandler(lvBtn_Click);
 
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+
             //Init all timers and etc
             //timer_instances = new SmartTimer();
             //timer_instances.Interval = 1500;
@@ -68,34 +68,61 @@ namespace L2Robot
             GameData gamedata;
             try
             {       
+                    //Handle ListView Update
                     if (this.listView_instances.SelectedItems.Count > 0)
                     {
                         this.lvBtn.Visible = false;
                         uint ID = uint.Parse((this.listView_instances.SelectedItems[0].SubItems[4].Text));
                         string PlayerName = this.listView_instances.SelectedItems[0].Text;
                         Console.WriteLine("-------ID:{0}", ID);
+                        //Update NewPlayer List
                         this.dataGridViewNearPlayer.DataSource = FishFlyPlayerLists[ID];
+
+                        //Update Instance Get Button
                         this.buttonGetHwd.Enabled = true;
 
+                        //Update Fishfly Activate Button
                         this.lvBtn.Size = new Size(listView_instances.SelectedItems[0].SubItems[3].Bounds.Width,
                             listView_instances.SelectedItems[0].SubItems[3].Bounds.Height);
                         this.lvBtn.Location = new Point(listView_instances.SelectedItems[0].SubItems[3].Bounds.Left,
                                                 listView_instances.SelectedItems[0].SubItems[3].Bounds.Top);
 
                         gamedata = GetCurrentGameData(PlayerName);
-                        if (gamedata.fishflythread.bRunning == false)
+                        if (gamedata != null)
                         {
-                            this.lvBtn.Text = "未激活";
+                            if (gamedata.fishflythread.bGetData == false)
+                            {
+                                this.lvBtn.Text = "未激活";
+                            }
+                            else
+                            {
+                                this.lvBtn.Text = "点击停止";
+                            }
+                            this.lvBtn.Enabled = true;
+                            this.lvBtn.Visible = true;
                         }
-                        else
+
+                        //Update BlackList
                         {
-                            this.lvBtn.Text = "点击停止";
+                            List<String> p;
+                            this.listViewBlackList.Clear();
+                            p = gamedata.blacklist_chars.GetBlackList();
+
+                            foreach(string tmp in p)
+                            {
+                                //Console.WriteLine(tmp);
+                                this.listViewBlackList.Items.Add(tmp);
+                            }
                         }
-                        this.lvBtn.Visible = true;
+                        
                     }
                     else
                     {
-                        this.buttonGetHwd.Enabled = false;
+                        //this.buttonGetHwd.Enabled = false;
+                        //this.lvBtn.Enabled = false;
+                        //this.lvBtn.Visible = false;
+                        //this.dataGridViewNearPlayer.DataSource = null;
+                        //this.listViewBlackList.Items.Clear();
                     }
             }
             catch
@@ -125,11 +152,13 @@ namespace L2Robot
 
             Globals.running = false;
 
+            Console.WriteLine("game clean up ----");
+
             Globals.InstancesLock.EnterWriteLock();
 
             for (int i = 0; i < Globals.Games.Count; i++)
             {
-                Console.WriteLine("game clean up");
+                Console.WriteLine("[FormMain_FormClosing]:game clean up");
                 gamedata = Globals.Games.ElementAt(i).Value;
 
                 gamedata.running = false;
@@ -150,6 +179,11 @@ namespace L2Robot
                     {
                         gamedata.gamethread.sendthread.Abort();
                         gamedata.gamethread.readthread.Abort();
+                    }
+
+                    if (gamedata.fishflythread != null)
+                    {
+                        gamedata.fishflythread.FishFlyProc.Abort();
                     }
 
                     if (gamedata.Game_ClientLink != null)
@@ -220,7 +254,7 @@ namespace L2Robot
                 if (this.listView_instances.SelectedItems.Count == 1)
                 {
                     this.listView_instances.SelectedItems[0].SubItems[1].Text = hwnd.ToString();
-                    GetBlackList();
+                    WM_GetBlackList();
 
                     Globals.InstancesLock.EnterWriteLock();
                     for (int j = 0; j < Globals.Games.Count; j++)
@@ -237,7 +271,7 @@ namespace L2Robot
             }
         }
 
-        private void GetBlackList()
+        private void WM_GetBlackList()
         {
             List<String> p;
             GameData gamedata;
@@ -282,17 +316,24 @@ namespace L2Robot
             bool found = false;
             GameData gamedata = null;
 
-            if (PlayerName != "")
-            { 
-                for (int i = 0; i < Globals.Games.Count; i++)
-                {
-                    gamedata = Globals.Games.ElementAt(i).Value;
-                    if (gamedata.my_char.Name == PlayerName)
+            try
+            {
+                if (PlayerName != "")
+                { 
+                    for (int i = 0; i < Globals.Games.Count; i++)
                     {
-                        found = true;
-                        break;
+                        gamedata = Globals.Games.ElementAt(i).Value;
+                        if (gamedata.my_char.Name == PlayerName)
+                        {
+                            found = true;
+                            break;
+                        }
                     }
                 }
+            }
+            catch
+            {
+
             }
 
             if (found == true)
@@ -307,7 +348,7 @@ namespace L2Robot
 
         private void button1_MouseUp(object sender, MouseEventArgs e)
         {
-            /*
+            
             Point pi = new Point();
             int hwnd;
             GameData gamedata;
@@ -319,7 +360,7 @@ namespace L2Robot
 
             BackgroundKey key = new BackgroundKey(hwnd, 0);
             key.PressKey();
-            */
+            
         }
 
         private void lvBtn_Click(object sender, EventArgs e)
@@ -332,16 +373,19 @@ namespace L2Robot
                 PlayerName = listView_instances.SelectedItems[0].Text;
 
                 gamedata = GetCurrentGameData(PlayerName);
-                if (gamedata.fishflythread.bRunning == false)
+                if (gamedata != null)
                 {
-                    this.lvBtn.Text = "点击停止";
-                    gamedata.fishflythread.bRunning = true;
-                    gamedata.fishflythread.bGetData = true;
-                }
-                else
-                {
-                    this.lvBtn.Text = "未激活";
-                    gamedata.fishflythread.bRunning = false;
+                    if (gamedata.fishflythread.bGetData == false)
+                    {
+                        this.lvBtn.Text = "点击停止";
+                        //gamedata.fishflythread.bRunning = true;
+                        gamedata.fishflythread.bGetData = true;
+                    }
+                    else
+                    {
+                        this.lvBtn.Text = "未激活";
+                        gamedata.fishflythread.bGetData = false;
+                    }
                 }
 
             }
@@ -370,6 +414,11 @@ namespace L2Robot
         {
             e.Cancel = true;
             e.NewWidth = this.listView_instances.Columns[e.ColumnIndex].Width;
+        }
+
+        private void dataGridViewNearPlayer_SelectionChanged(object sender, EventArgs e)
+        {
+            this.dataGridViewNearPlayer.ClearSelection();
         }
     }
 }
