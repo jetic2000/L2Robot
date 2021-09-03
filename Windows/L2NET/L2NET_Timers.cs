@@ -99,10 +99,11 @@ namespace L2Robot
                         {
                             //found same name but need to init means process id may change, 
                             //need to put empty to ask user to reconnect
-                            i.SubItems[1].Text = "未获取";
-                            i.SubItems[2].Text = "(" + p.X.ToString() + "," + p.Y.ToString() + "," + p.Z.ToString() + ")" ;
-                            i.SubItems[3].Text = "";
-                            i.SubItems[4].Text = p.PlayerID.ToString();
+                            this.listView_instances.Items.Remove(i);
+                            //i.SubItems[1].Text = "未获取";
+                            //i.SubItems[2].Text = "(" + p.X.ToString() + "," + p.Y.ToString() + "," + p.Z.ToString() + ")" ;
+                            //i.SubItems[3].Text = "";
+                            //i.SubItems[4].Text = p.PlayerID.ToString();
                         }
                         //this.listView_instances.Items.Add(lvi);
                         break;

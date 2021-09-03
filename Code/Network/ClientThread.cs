@@ -192,7 +192,7 @@ namespace L2Robot
                         {
                             string h = String.Format("[ME] {0}",
                                 BitConverter.ToString(buffpacket, 0).Replace("-", string.Empty).ToLower());
-                            //Console.WriteLine(h);
+                            Console.WriteLine(h);
                             //Globals.l2net_home.UpdateLog(h);
                         }
 

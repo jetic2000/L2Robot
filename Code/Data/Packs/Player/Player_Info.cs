@@ -13,7 +13,7 @@ namespace L2Robot
         private string _Name = "";
         private Coordinate _Current_Pos;
         private Coordinate _Dest_Pos;
-        private bool _isSafeZone;
+        private volatile bool _isSafeZone;
         //public volatile float X = 0;
         //public volatile float Y = 0;
         //public volatile float Z = 0;
@@ -169,6 +169,7 @@ namespace L2Robot
             //Globals.gamedata.BOT_STATE = BotState.Nothing;
             BuffTarget = 0;
             BuffTargetLast = 0;
+            //isSafeZone = true;
             //Clear_Skills();
             //Clear_MyBuffs();
             //Clear_Party();

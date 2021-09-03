@@ -38,6 +38,7 @@ namespace L2Robot
         {
             this.gamedata.Game_IP = this.gamedata.Override_Game_IP;
             this.gamedata.Game_Port = this.gamedata.Override_Game_Port;
+            this.gamedata.Game_Port_Ext = this.gamedata.Override_Game_Port_Ext;
             this.gamedata.Game_GameSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             this.gamedata.Game_GameSocket.Connect(this.gamedata.Game_IP, this.gamedata.Game_Port);
 

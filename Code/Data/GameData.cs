@@ -328,11 +328,13 @@ namespace L2Robot
 
         public volatile string Game_IP;
         public volatile int Game_Port;
+        public volatile int Game_Port_Ext;
 
         public volatile string IG_Local_IP = "127.0.0.1";
         public volatile string GG_IP = "127.0.0.1";
         public volatile string Override_Game_IP;
         public volatile int Override_Game_Port;
+        public volatile int Override_Game_Port_Ext;
 
         public volatile Chronicle Chron;
         public volatile bool logged_in = false;
